@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Campaign Report</title>
+</head>
+<body>
+    <h1>Upload Campaign Report</h1>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <!-- Date Inputs come first -->
+        <label for="start_date">Start Date:</label>
+        <input type="date" name="start_date" id="start_date" value="{{ start_date }}" required>
+
+        <label for="end_date">End Date:</label>
+        <input type="date" name="end_date" id="end_date" value="{{ end_date }}" required>
+
+        <!-- CSV Upload Field -->
+        <label for="campaign_file">Select Campaign CSV File:</label>
+        <input type="file" name="campaign_file" id="campaign_file" required>
+
+        <button type="submit">Upload</button>
+    </form>
+
+    {% if combined_data %}
+    <h2>Map Campaign Names</h2>
+    <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="mapping_submitted" value="true">
+        <input type="hidden" name="start_date" value="{{ start_date }}">
+        <input type="hidden" name="end_date" value="{{ end_date }}">
+        <table>
+            <tr>
+                <th>CSV Campaign Name</th>
+                <th>User-Friendly Campaign Name</th>
+            </tr>
+            {% for campaign, form in combined_data %}
+            <tr>
+                <td><input type="hidden" name="csv_name_{{ forloop.counter0 }}" value="{{ campaign.csv_name }}">
+                    {{ campaign.csv_name }}</td>
+                <td>
+                    <input type="text" name="user_friendly_name_{{ forloop.counter0 }}" placeholder="Enter friendly name" value="{{ form.initial.user_friendly_name }}">
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+        <button type="submit">Save Mappings</button>
+    </form>
+    {% endif %}
+</body>
+</html>

@@ -15,8 +15,11 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
+from CampaignTracker.views import filter_campaigns  # Import the view that should be the home page
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', filter_campaigns, name='home'),  # Set the home page to be the filter_campaigns view
+    path('campaigns/', include('CampaignTracker.urls')),
 ]

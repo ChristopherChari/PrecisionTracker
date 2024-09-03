@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Filter Campaigns</title>
+</head>
+<body>
+    <h1>Filter Campaigns by Client and Date Range</h1>
+    <form method="get">
+        <label for="client">Select Client:</label>
+        <select name="client" id="client" required>
+            <option value="">-- Select Client --</option>
+            {% for client in clients %}
+                <option value="{{ client.id }}" {% if client.id == selected_client %}selected{% endif %}>
+                    {{ client.name }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <label for="start_date">Start Date:</label>
+        <input type="date" name="start_date" id="start_date" value="{{ selected_start_date }}" required>
+
+        <label for="end_date">End Date:</label>
+        <input type="date" name="end_date" id="end_date" value="{{ selected_end_date }}" required>
+
+        <button type="submit">Filter</button>
+    </form>
+
+    {% if campaigns_by_type %}
+        <h2>Filtered Campaigns by Type</h2>
+        {% for campaign_type, data in campaigns_by_type.items %}
+            <h3>{{ campaign_type }}</h3>
+            <p>Total Impressions: {{ data.total_impressions }}</p>
+            <p>Total Clicks: {{ data.total_clicks }}</p>
+            <p>Total Spend: {{ data.total_spend }}</p>
+            <p>Average CTR: {{ data.total_ctr|floatformat:2 }}%</p>
+            <p>Average CPC: {{ data.total_cpc|floatformat:2 }}</p>
+
+            <ul>
+                {% for campaign in data.campaigns %}
+                <li>{{ campaign.user_friendly_name|default:campaign.name }}</li>
+                {% endfor %}
+            </ul>
+        {% endfor %}
+    {% else %}
+        <p>No campaigns found for the selected client and date range.</p>
+    {% endif %}
+</body>
+</html>
