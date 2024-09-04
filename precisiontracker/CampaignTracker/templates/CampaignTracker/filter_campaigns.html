@@ -7,19 +7,10 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         $(document).ready(function () {
-            function updateCampaignList() {
-                $.ajax({
-                    url: "{% url 'home' %}",
-                    data: $('#filter-form').serialize(),
-                    success: function (data) {
-                        $('#campaign-list').html(data.html);  // Update the campaign list dynamically
-                    }
-                });
-            }
-
+            // Function to update the product dropdown based on the selected client
             function updateProductDropdown(client_id) {
                 $.ajax({
-                    url: "{% url 'get_products_for_client' %}",
+                    url: "{% url 'get_products_for_client' %}",  // Update this URL based on your view
                     data: { client_id: client_id },
                     success: function (data) {
                         let productSelect = $('#product');
@@ -32,26 +23,37 @@
                 });
             }
 
-            // Update products when client changes
+            // Function to update the campaign list based on selected filters
+            function updateCampaignList() {
+                $.ajax({
+                    url: "{% url 'home' %}",
+                    data: $('#filter-form').serialize(),
+                    success: function (data) {
+                        $('#campaign-list').html(data.html);
+                    }
+                });
+            }
+
+            // Trigger the product dropdown update when a client is selected
             $('#client').on('change', function () {
                 let client_id = $(this).val();
                 if (client_id) {
-                    updateProductDropdown(client_id);  // Populate product dropdown when client changes
-                    updateCampaignList();  // Automatically update the campaign list when the client changes
+                    updateProductDropdown(client_id);  // Update the product dropdown
                 } else {
-                    $('#product').empty().append('<option value="">-- Select Product --</option>');  // Ensure product dropdown is empty if no client is selected
+                    // Clear the product dropdown if no client is selected
+                    $('#product').empty().append('<option value="">-- Select Product --</option>');
                 }
             });
 
-            // Trigger AJAX when product, start_date, or end_date changes
-            $('#product, #start_date, #end_date').on('change', function () {
+            // Trigger the campaign list update when any filter changes
+            $('#client, #product, #start_date, #end_date').on('change', function () {
                 updateCampaignList();
             });
 
-            // Auto-submit form on page load if values are already set
-            if ($('#client').val()) {
-                updateProductDropdown($('#client').val());  // Load products if a client is pre-selected
-            }
+            // Initialize: don't pre-fill product, ensure no product is selected on page load
+            $('#product').empty().append('<option value="">-- Select Product --</option>');
+
+            // If filters are already selected (e.g., from a previous session), auto-update the campaign list
             if ($('#client').val() || $('#start_date').val() || $('#end_date').val()) {
                 updateCampaignList();
             }
@@ -72,7 +74,6 @@
         <label for="product">Select Product:</label>
         <select name="product" id="product">
             <option value="">-- Select Product --</option>
-            <!-- Product options will be populated dynamically via AJAX -->
         </select>
 
         <label for="start_date">Start Date:</label>
@@ -82,7 +83,6 @@
         <input type="date" name="end_date" id="end_date" value="{{ selected_end_date }}">
     </form>
 
-    <!-- This div will be dynamically updated with the campaigns -->
     <div id="campaign-list">
         {% include 'CampaignTracker/campaign_list.html' %}
     </div>

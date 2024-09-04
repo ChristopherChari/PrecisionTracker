@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Client, Channel, Campaign, MonthlyData
+from .models import Client, Channel, Campaign, MonthlyData, Target
 
 @admin.register(Client)
 class ClientAdmin(admin.ModelAdmin):
@@ -22,3 +22,9 @@ class MonthlyDataAdmin(admin.ModelAdmin):
     list_display = ('campaign', 'month', 'budget', 'spend', 'impressions', 'clicks', 'conversions')
     list_filter = ('campaign', 'month')
     search_fields = ('campaign__name',)
+
+@admin.register(Target)
+class TargetAdmin(admin.ModelAdmin):
+    list_display = ('product', 'client', 'campaign_type', 'month', 'target_spend', 'target_impressions', 'target_clicks')
+    list_filter = ('client', 'campaign_type', 'month')
+    search_fields = ('product', 'client__name', 'campaign_type')

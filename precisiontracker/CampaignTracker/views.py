@@ -16,28 +16,58 @@ from django.template.loader import render_to_string
 from django.http import JsonResponse
 from .models import Campaign
 
+from django.shortcuts import render, redirect
+from .forms import  TargetForm
+from .models import Target, Client
+
+def enter_targets(request):
+    if request.method == 'POST':
+        form = TargetForm(request.POST)
+        if form.is_valid():
+            # Print the cleaned data before saving (including the cleaned month)
+            print(f"Cleaned form data: {form.cleaned_data}")
+            
+            form.save()
+            messages.success(request, 'Target saved successfully!')
+            return redirect('enter_target')  # Redirect to the same page after successful save
+        else:
+            # Debugging: print form errors to the terminal
+            print("Form errors:", form.errors)
+            messages.error(request, 'There was an error with your submission. Please check the form.')
+    else:
+        form = TargetForm()
+
+    return render(request, 'CampaignTracker/enter_target.html', {'form': form})
+
+from .models import Campaign
+
+from django.http import JsonResponse
+from .models import Campaign
+
 def get_products_for_client(request):
     client_id = request.GET.get('client_id')
     products = []
-    
+
     if client_id:
-        # Filter distinct products based on client campaigns
+        # Fetch distinct products for the selected client
         campaigns = Campaign.objects.filter(client_id=client_id).values_list('product', flat=True).distinct()
         products = list(campaigns)
 
     return JsonResponse({'products': products})
 
+
 def filter_campaigns(request):
     clients = Client.objects.all()
-    products = []
     campaigns_by_type = {}
+    targets_by_product = {}
 
+    # Get the filters from the request or session
     client_id = request.GET.get('client', request.session.get('selected_client'))
     product = request.GET.get('product', request.session.get('selected_product'))
     start_date = request.GET.get('start_date', request.session.get('selected_start_date'))
     end_date = request.GET.get('end_date', request.session.get('selected_end_date'))
 
-    # Save selected client, product, start date, and end date in session for persistence
+    # Save filters to session to persist selections
     if client_id:
         request.session['selected_client'] = client_id
     if product:
@@ -47,16 +77,15 @@ def filter_campaigns(request):
     if end_date:
         request.session['selected_end_date'] = end_date
 
+    # Filter campaigns based on client, product, and date range
     if client_id and start_date and end_date:
         client = get_object_or_404(Client, id=client_id)
-        # Filter campaigns by client and date range
         campaigns = Campaign.objects.filter(
-            client=client,
-            start_date__gte=start_date,
+            client=client, 
+            start_date__gte=start_date, 
             end_date__lte=end_date
         )
-
-        # If a product is selected, filter campaigns further by product
+        
         if product:
             campaigns = campaigns.filter(product=product)
 
@@ -84,19 +113,27 @@ def filter_campaigns(request):
                 data['total_ctr'] = (data['total_clicks'] / data['total_impressions']) * 100 if data['total_impressions'] > 0 else 0
                 data['total_cpc'] = data['total_spend'] / data['total_clicks'] if data['total_clicks'] > 0 else 0
 
-    # Render the page via AJAX if it's an AJAX request
-    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        # Retrieve matching targets for the selected product and month (if available)
+        if product:
+            targets = Target.objects.filter(client=client, product=product, month__gte=start_date, month__lte=end_date)
+            for target in targets:
+                if target.product not in targets_by_product:
+                    targets_by_product[target.product] = []
+                targets_by_product[target.product].append(target)
+
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':  # Check if request is AJAX
         rendered_campaigns = render_to_string('CampaignTracker/campaign_list.html', {
             'campaigns_by_type': campaigns_by_type,
+            'targets_by_product': targets_by_product,
         })
         return JsonResponse({
             'html': rendered_campaigns,
         })
 
-    # Normal render
     return render(request, 'CampaignTracker/filter_campaigns.html', {
         'clients': clients,
         'campaigns_by_type': campaigns_by_type,
+        'targets_by_product': targets_by_product,
         'selected_client': client_id,
         'selected_product': product,
         'selected_start_date': start_date,

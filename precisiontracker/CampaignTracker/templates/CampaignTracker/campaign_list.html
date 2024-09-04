@@ -13,7 +13,24 @@
             <li>{{ campaign.product|default:campaign.name }}</li>
             {% endfor %}
         </ul>
+
+        {% if targets_by_product %}
+            <h4>Targets for this Campaign Type:</h4>
+            <ul>
+                {% for product, targets in targets_by_product.items %}
+                    <li><strong>Product:</strong> {{ product }}</li>
+                    {% for target in targets %}
+                        <li>Month: {{ target.month|date:"F Y" }}</li>
+                        <li>Target Spend: {{ target.target_spend }}</li>
+                        <li>Target Impressions: {{ target.target_impressions }}</li>
+                        <li>Target Clicks: {{ target.target_clicks }}</li>
+                        <li>Target CTR: {{ target.target_ctr|floatformat:2 }}%</li>
+                        <li>Target CPC: {{ target.target_cpc|floatformat:2 }}</li>
+                    {% endfor %}
+                {% endfor %}
+            </ul>
+        {% endif %}
     {% endfor %}
 {% else %}
-    <p>No campaigns found for the selected client and date range.</p>
+    <p>No campaigns found for the selected client, product, and date range.</p>
 {% endif %}
