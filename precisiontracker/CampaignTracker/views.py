@@ -10,16 +10,16 @@ from django.shortcuts import render, get_object_or_404
 from .models import Client, Campaign
 from .forms import CampaignNameMappingForm
 
+from django.http import JsonResponse
+from django.template.loader import render_to_string
+
 def filter_campaigns(request):
     clients = Client.objects.all()
     campaigns_by_type = {}
-
-    # Retrieve values from the session or the GET request
     client_id = request.GET.get('client', request.session.get('selected_client'))
     start_date = request.GET.get('start_date', request.session.get('selected_start_date'))
     end_date = request.GET.get('end_date', request.session.get('selected_end_date'))
 
-    # Update the session with the current values
     if client_id:
         request.session['selected_client'] = client_id
     if start_date:
@@ -31,7 +31,6 @@ def filter_campaigns(request):
         client = get_object_or_404(Client, id=client_id)
         campaigns = Campaign.objects.filter(client=client, start_date__gte=start_date, end_date__lte=end_date)
 
-        # Group campaigns by campaign type and summarize
         for campaign in campaigns:
             campaign_type = campaign.campaign_type
             if campaign_type not in campaigns_by_type:
@@ -55,6 +54,14 @@ def filter_campaigns(request):
             if data['total_clicks'] > 0:
                 data['total_ctr'] = (data['total_clicks'] / data['total_impressions']) * 100 if data['total_impressions'] > 0 else 0
                 data['total_cpc'] = data['total_spend'] / data['total_clicks'] if data['total_clicks'] > 0 else 0
+
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':  # Check if request is AJAX
+        rendered_campaigns = render_to_string('CampaignTracker/campaign_list.html', {
+            'campaigns_by_type': campaigns_by_type,
+        })
+        return JsonResponse({
+            'html': rendered_campaigns,
+        })
 
     return render(request, 'CampaignTracker/filter_campaigns.html', {
         'clients': clients,

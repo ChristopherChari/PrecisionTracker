@@ -4,10 +4,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Filter Campaigns</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            function updateCampaignList() {
+                $.ajax({
+                    url: "{% url 'home' %}",
+                    data: $('#filter-form').serialize(),
+                    success: function(data) {
+                        $('#campaign-list').html(data.html);
+                    }
+                });
+            }
+
+            // Trigger AJAX when client or date changes
+            $('#client, #start_date, #end_date').on('change', function() {
+                updateCampaignList();
+            });
+
+            // Auto-submit form on page load if values are already set
+            if ($('#client').val() || $('#start_date').val() || $('#end_date').val()) {
+                updateCampaignList();
+            }
+        });
+    </script>
 </head>
 <body>
     <h1>Filter Campaigns by Client and Date Range</h1>
-    <form method="get">
+
+    <!-- The form for filtering -->
+    <form id="filter-form" method="get">
         <label for="client">Select Client:</label>
         <select name="client" id="client" required>
             <option value="">-- Select Client --</option>
@@ -23,28 +49,11 @@
 
         <label for="end_date">End Date:</label>
         <input type="date" name="end_date" id="end_date" value="{{ selected_end_date }}" required>
-
-        <button type="submit">Filter</button>
     </form>
 
-    {% if campaigns_by_type %}
-        <h2>Filtered Campaigns by Type</h2>
-        {% for campaign_type, data in campaigns_by_type.items %}
-            <h3>{{ campaign_type }}</h3>
-            <p>Total Impressions: {{ data.total_impressions }}</p>
-            <p>Total Clicks: {{ data.total_clicks }}</p>
-            <p>Total Spend: {{ data.total_spend }}</p>
-            <p>Average CTR: {{ data.total_ctr|floatformat:2 }}%</p>
-            <p>Average CPC: {{ data.total_cpc|floatformat:2 }}</p>
-
-            <ul>
-                {% for campaign in data.campaigns %}
-                <li>{{ campaign.user_friendly_name|default:campaign.name }}</li>
-                {% endfor %}
-            </ul>
-        {% endfor %}
-    {% else %}
-        <p>No campaigns found for the selected client and date range.</p>
-    {% endif %}
+    <!-- This div will be dynamically updated with the campaigns -->
+    <div id="campaign-list">
+        {% include 'CampaignTracker/campaign_list.html' %}
+    </div>
 </body>
 </html>

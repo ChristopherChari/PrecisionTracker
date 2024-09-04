@@ -1,0 +1,19 @@
+{% if campaigns_by_type %}
+    <h2>Filtered Campaigns by Type</h2>
+    {% for campaign_type, data in campaigns_by_type.items %}
+        <h3>{{ campaign_type }}</h3>
+        <p>Total Impressions: {{ data.total_impressions }}</p>
+        <p>Total Clicks: {{ data.total_clicks }}</p>
+        <p>Total Spend: {{ data.total_spend }}</p>
+        <p>Average CTR: {{ data.total_ctr|floatformat:2 }}%</p>
+        <p>Average CPC: {{ data.total_cpc|floatformat:2 }}</p>
+
+        <ul>
+            {% for campaign in data.campaigns %}
+            <li>{{ campaign.user_friendly_name|default:campaign.name }}</li>
+            {% endfor %}
+        </ul>
+    {% endfor %}
+{% else %}
+    <p>No campaigns found for the selected client and date range.</p>
+{% endif %}
