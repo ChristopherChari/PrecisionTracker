@@ -10,19 +10,56 @@
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         
-        <!-- Date Inputs come first -->
+        <!-- Date Inputs -->
         <label for="start_date">Start Date:</label>
         <input type="date" name="start_date" id="start_date" value="{{ start_date }}" required>
 
         <label for="end_date">End Date:</label>
         <input type="date" name="end_date" id="end_date" value="{{ end_date }}" required>
 
+        <!-- Client Selection -->
+        <label for="client">Select Client:</label>
+        <select name="client" id="client" required>
+            <option value="">-- Select Client --</option>
+            {% for client in clients %}
+                <option value="{{ client.id }}" {% if client.id == client_id %}selected{% endif %}>
+                    {{ client.name }}
+                </option>
+            {% endfor %}
+        </select>
+
         <!-- CSV Upload Field -->
         <label for="campaign_file">Select Campaign CSV File:</label>
-        <input type="file" name="campaign_file" id="campaign_file" required>
+        <input type="file" name="campaign_file" id="campaign_file">
 
         <button type="submit">Upload</button>
     </form>
+
+    {% if filtered_campaigns %}
+    <h2>Past Campaigns Matching Filter</h2>
+    <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="mapping_submitted" value="true">
+        <input type="hidden" name="start_date" value="{{ start_date }}">
+        <input type="hidden" name="end_date" value="{{ end_date }}">
+        <table>
+            <tr>
+                <th>CSV Campaign Name</th>
+                <th>User-Friendly Campaign Name</th>
+            </tr>
+            {% for campaign in filtered_campaigns %}
+            <tr>
+                <td><input type="hidden" name="csv_name_{{ forloop.counter0 }}" value="{{ campaign.name }}">
+                    {{ campaign.name }}</td>
+                <td>
+                    <input type="text" name="user_friendly_name_{{ forloop.counter0 }}" placeholder="Enter friendly name" value="{{ campaign.user_friendly_name }}">
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+        <button type="submit">Save Mappings</button>
+    </form>
+    {% endif %}
 
     {% if combined_data %}
     <h2>Map Campaign Names</h2>
@@ -51,3 +88,4 @@
     {% endif %}
 </body>
 </html>
+

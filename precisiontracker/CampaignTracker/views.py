@@ -78,11 +78,23 @@ def map_campaign_name(request):
         campaign.save()
 
         return redirect('home')  # Redirect back to the home page after saving
+
 def upload_campaign_report(request):
     campaigns = []
     combined_data = []
+    filtered_campaigns = []
+
     start_date = request.POST.get('start_date')
     end_date = request.POST.get('end_date')
+    client_id = request.POST.get('client')
+
+    if client_id and start_date and end_date:
+        client = get_object_or_404(Client, id=client_id)
+        filtered_campaigns = Campaign.objects.filter(
+            client=client,
+            start_date__gte=start_date,
+            end_date__lte=end_date
+        )
 
     if request.method == 'POST' and request.FILES.get('campaign_file'):
         campaign_file = request.FILES['campaign_file']
@@ -112,31 +124,22 @@ def upload_campaign_report(request):
                 combined_data.append((campaign_data, mapping_form))
 
     elif request.method == 'POST' and request.POST.get('mapping_submitted'):
-        # Handle the name mapping submission
+        # Handle the name mapping submission for both new and past campaigns
         for key in request.POST:
             if key.startswith('user_friendly_name_'):
                 campaign_index = int(key.split('_')[-1])
                 csv_name = request.POST.get(f'csv_name_{campaign_index}')
                 user_friendly_name = request.POST.get(key)
-                # Save the mapped name to the Campaign model or process accordingly
-                print(f'Mapped {csv_name} to {user_friendly_name}')
-                # You could save this data to the database here
-
-        # Save campaigns with start_date and end_date if necessary
-        for campaign_data in campaigns:
-            Campaign.objects.create(
-                name=user_friendly_name,  # Use the mapped name
-                client=None,  # Assign a client if necessary
-                start_date=start_date,
-                end_date=end_date,
-                impressions=campaign_data['impressions'],
-                clicks=campaign_data['clicks'],
-                spend=campaign_data['spend'],
-                campaign_type=campaign_data['campaign_type'],
-            )
+                
+                # Save the mapped name to the Campaign model or update it
+                campaign = Campaign.objects.get(name=csv_name)
+                campaign.user_friendly_name = user_friendly_name
+                campaign.save()
 
     return render(request, 'CampaignTracker/upload_campaign_report.html', {
         'combined_data': combined_data,
+        'filtered_campaigns': filtered_campaigns,
         'start_date': start_date,
         'end_date': end_date,
+        'client_id': client_id,
     })
