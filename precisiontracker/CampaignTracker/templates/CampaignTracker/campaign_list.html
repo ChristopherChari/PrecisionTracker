@@ -2,35 +2,24 @@
     <h2>Filtered Campaigns by Type</h2>
     {% for campaign_type, data in campaigns_by_type.items %}
         <h3>{{ campaign_type }}</h3>
+        <p>Total Spend: {{ data.total_spend }}</p>
         <p>Total Impressions: {{ data.total_impressions }}</p>
         <p>Total Clicks: {{ data.total_clicks }}</p>
-        <p>Total Spend: {{ data.total_spend }}</p>
         <p>Average CTR: {{ data.total_ctr|floatformat:2 }}%</p>
         <p>Average CPC: {{ data.total_cpc|floatformat:2 }}</p>
 
+        <h4>Dynamic Targets for Selected Range</h4>
+        <p>Target Spend: {{ data.target_spend|floatformat:2 }}</p>
+        <p>Target Impressions: {{ data.target_impressions|floatformat:0 }}</p>
+        <p>Target Clicks: {{ data.target_clicks|floatformat:0 }}</p>
+        <p>Target CTR: {{ data.target_ctr|floatformat:2 }}%</p>
+        <p>Target CPC: {{ data.target_cpc|floatformat:2 }}</p>
         <ul>
             {% for campaign in data.campaigns %}
             <li>{{ campaign.product|default:campaign.name }}</li>
             {% endfor %}
         </ul>
-
-        {% if targets_by_product %}
-            <h4>Targets for this Campaign Type:</h4>
-            <ul>
-                {% for product, targets in targets_by_product.items %}
-                    <li><strong>Product:</strong> {{ product }}</li>
-                    {% for target in targets %}
-                        <li>Month: {{ target.month|date:"F Y" }}</li>
-                        <li>Target Spend: {{ target.target_spend }}</li>
-                        <li>Target Impressions: {{ target.target_impressions }}</li>
-                        <li>Target Clicks: {{ target.target_clicks }}</li>
-                        <li>Target CTR: {{ target.target_ctr|floatformat:2 }}%</li>
-                        <li>Target CPC: {{ target.target_cpc|floatformat:2 }}</li>
-                    {% endfor %}
-                {% endfor %}
-            </ul>
-        {% endif %}
     {% endfor %}
 {% else %}
-    <p>No campaigns found for the selected client, product, and date range.</p>
+    <p>No campaigns found for the selected client and date range.</p>
 {% endif %}

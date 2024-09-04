@@ -6,6 +6,9 @@ from django.core.files.storage import FileSystemStorage
 from django.utils.dateparse import parse_date
 from .forms import CampaignForm, CampaignFilterForm
 
+from datetime import timedelta
+from decimal import Decimal  # Import Decimal
+
 from django.shortcuts import render, get_object_or_404
 from .models import Client, Campaign
 from .forms import CampaignNameMappingForm
@@ -13,8 +16,6 @@ from .forms import CampaignNameMappingForm
 from django.http import JsonResponse
 from django.template.loader import render_to_string
 
-from django.http import JsonResponse
-from .models import Campaign
 
 from django.shortcuts import render, redirect
 from .forms import  TargetForm
@@ -39,11 +40,6 @@ def enter_targets(request):
 
     return render(request, 'CampaignTracker/enter_target.html', {'form': form})
 
-from .models import Campaign
-
-from django.http import JsonResponse
-from .models import Campaign
-
 def get_products_for_client(request):
     client_id = request.GET.get('client_id')
     products = []
@@ -59,15 +55,11 @@ def get_products_for_client(request):
 def filter_campaigns(request):
     clients = Client.objects.all()
     campaigns_by_type = {}
-    targets_by_product = {}
-
-    # Get the filters from the request or session
     client_id = request.GET.get('client', request.session.get('selected_client'))
     product = request.GET.get('product', request.session.get('selected_product'))
     start_date = request.GET.get('start_date', request.session.get('selected_start_date'))
     end_date = request.GET.get('end_date', request.session.get('selected_end_date'))
 
-    # Save filters to session to persist selections
     if client_id:
         request.session['selected_client'] = client_id
     if product:
@@ -77,20 +69,36 @@ def filter_campaigns(request):
     if end_date:
         request.session['selected_end_date'] = end_date
 
-    # Filter campaigns based on client, product, and date range
-    if client_id and start_date and end_date:
+    if client_id and product and start_date and end_date:
         client = get_object_or_404(Client, id=client_id)
-        campaigns = Campaign.objects.filter(
-            client=client, 
-            start_date__gte=start_date, 
-            end_date__lte=end_date
-        )
-        
-        if product:
-            campaigns = campaigns.filter(product=product)
+        start_date = parse_date(start_date)
+        end_date = parse_date(end_date)
+        total_days_selected = (end_date - start_date).days + 1
+
+        campaigns = Campaign.objects.filter(client=client, product=product, start_date__gte=start_date, end_date__lte=end_date)
 
         for campaign in campaigns:
             campaign_type = campaign.campaign_type
+
+            # Fetch the specific target for this campaign type
+            target = Target.objects.filter(client=client, product=product, campaign_type=campaign_type, month__year=start_date.year, month__month=start_date.month).first()
+
+            if target:
+                days_in_month = (target.month.replace(month=target.month.month % 12 + 1, day=1) - timedelta(days=1)).day
+                proportion_of_month = Decimal(total_days_selected) / Decimal(days_in_month)
+
+                # Calculate the dynamic targets
+                target_spend = target.target_spend * proportion_of_month
+                target_impressions = target.target_impressions * proportion_of_month
+                target_clicks = target.target_clicks * proportion_of_month
+
+                # Calculate target CPC and CTR (not stored in the database)
+                target_ctr = (target_clicks / target_impressions) * 100 if target_impressions > 0 else 0
+                target_cpc = target_spend / target_clicks if target_clicks > 0 else 0
+            else:
+                target_spend = target_impressions = target_clicks = 0
+                target_ctr = target_cpc = 0
+
             if campaign_type not in campaigns_by_type:
                 campaigns_by_type[campaign_type] = {
                     'campaigns': [],
@@ -99,32 +107,26 @@ def filter_campaigns(request):
                     'total_spend': 0,
                     'total_ctr': 0,
                     'total_cpc': 0,
+                    'target_spend': target_spend,
+                    'target_impressions': target_impressions,
+                    'target_clicks': target_clicks,
+                    'target_ctr': target_ctr,  # Adding target CTR
+                    'target_cpc': target_cpc,  # Adding target CPC
                 }
+
             campaigns_by_type[campaign_type]['campaigns'].append(campaign)
             campaigns_by_type[campaign_type]['total_impressions'] += campaign.impressions
             campaigns_by_type[campaign_type]['total_clicks'] += campaign.clicks
             campaigns_by_type[campaign_type]['total_spend'] += campaign.spend
-            campaigns_by_type[campaign_type]['total_ctr'] += campaign.ctr
-            campaigns_by_type[campaign_type]['total_cpc'] += campaign.cpc
 
-        # Calculate average CTR and CPC for each campaign type
         for campaign_type, data in campaigns_by_type.items():
             if data['total_clicks'] > 0:
                 data['total_ctr'] = (data['total_clicks'] / data['total_impressions']) * 100 if data['total_impressions'] > 0 else 0
                 data['total_cpc'] = data['total_spend'] / data['total_clicks'] if data['total_clicks'] > 0 else 0
 
-        # Retrieve matching targets for the selected product and month (if available)
-        if product:
-            targets = Target.objects.filter(client=client, product=product, month__gte=start_date, month__lte=end_date)
-            for target in targets:
-                if target.product not in targets_by_product:
-                    targets_by_product[target.product] = []
-                targets_by_product[target.product].append(target)
-
-    if request.headers.get('x-requested-with') == 'XMLHttpRequest':  # Check if request is AJAX
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         rendered_campaigns = render_to_string('CampaignTracker/campaign_list.html', {
             'campaigns_by_type': campaigns_by_type,
-            'targets_by_product': targets_by_product,
         })
         return JsonResponse({
             'html': rendered_campaigns,
@@ -133,15 +135,11 @@ def filter_campaigns(request):
     return render(request, 'CampaignTracker/filter_campaigns.html', {
         'clients': clients,
         'campaigns_by_type': campaigns_by_type,
-        'targets_by_product': targets_by_product,
         'selected_client': client_id,
         'selected_product': product,
         'selected_start_date': start_date,
         'selected_end_date': end_date,
     })
-
-from django.shortcuts import redirect, get_object_or_404
-from .models import Campaign
 
 def map_campaign_name(request):
     if request.method == 'POST':
