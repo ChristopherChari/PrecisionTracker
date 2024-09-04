@@ -13,15 +13,35 @@ from .forms import CampaignNameMappingForm
 from django.http import JsonResponse
 from django.template.loader import render_to_string
 
+from django.http import JsonResponse
+from .models import Campaign
+
+def get_products_for_client(request):
+    client_id = request.GET.get('client_id')
+    products = []
+    
+    if client_id:
+        # Filter distinct products based on client campaigns
+        campaigns = Campaign.objects.filter(client_id=client_id).values_list('product', flat=True).distinct()
+        products = list(campaigns)
+
+    return JsonResponse({'products': products})
+
 def filter_campaigns(request):
     clients = Client.objects.all()
+    products = []
     campaigns_by_type = {}
+
     client_id = request.GET.get('client', request.session.get('selected_client'))
+    product = request.GET.get('product', request.session.get('selected_product'))
     start_date = request.GET.get('start_date', request.session.get('selected_start_date'))
     end_date = request.GET.get('end_date', request.session.get('selected_end_date'))
 
+    # Save selected client, product, start date, and end date in session for persistence
     if client_id:
         request.session['selected_client'] = client_id
+    if product:
+        request.session['selected_product'] = product
     if start_date:
         request.session['selected_start_date'] = start_date
     if end_date:
@@ -29,7 +49,16 @@ def filter_campaigns(request):
 
     if client_id and start_date and end_date:
         client = get_object_or_404(Client, id=client_id)
-        campaigns = Campaign.objects.filter(client=client, start_date__gte=start_date, end_date__lte=end_date)
+        # Filter campaigns by client and date range
+        campaigns = Campaign.objects.filter(
+            client=client,
+            start_date__gte=start_date,
+            end_date__lte=end_date
+        )
+
+        # If a product is selected, filter campaigns further by product
+        if product:
+            campaigns = campaigns.filter(product=product)
 
         for campaign in campaigns:
             campaign_type = campaign.campaign_type
@@ -55,7 +84,8 @@ def filter_campaigns(request):
                 data['total_ctr'] = (data['total_clicks'] / data['total_impressions']) * 100 if data['total_impressions'] > 0 else 0
                 data['total_cpc'] = data['total_spend'] / data['total_clicks'] if data['total_clicks'] > 0 else 0
 
-    if request.headers.get('x-requested-with') == 'XMLHttpRequest':  # Check if request is AJAX
+    # Render the page via AJAX if it's an AJAX request
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         rendered_campaigns = render_to_string('CampaignTracker/campaign_list.html', {
             'campaigns_by_type': campaigns_by_type,
         })
@@ -63,14 +93,15 @@ def filter_campaigns(request):
             'html': rendered_campaigns,
         })
 
+    # Normal render
     return render(request, 'CampaignTracker/filter_campaigns.html', {
         'clients': clients,
         'campaigns_by_type': campaigns_by_type,
         'selected_client': client_id,
+        'selected_product': product,
         'selected_start_date': start_date,
         'selected_end_date': end_date,
     })
-
 
 from django.shortcuts import redirect, get_object_or_404
 from .models import Campaign

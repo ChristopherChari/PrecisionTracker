@@ -1,0 +1,6 @@
+<select name="product" id="product">
+    <option value="">-- Select Product --</option>
+    {% for product in products %}
+        <option value="{{ product }}" {% if product == selected_product %}selected{% endif %}>{{ product }}</option>
+    {% endfor %}
+</select>

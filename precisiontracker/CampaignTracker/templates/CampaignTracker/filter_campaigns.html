@@ -6,23 +6,52 @@
     <title>Filter Campaigns</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-        $(document).ready(function() {
+        $(document).ready(function () {
             function updateCampaignList() {
                 $.ajax({
                     url: "{% url 'home' %}",
                     data: $('#filter-form').serialize(),
-                    success: function(data) {
-                        $('#campaign-list').html(data.html);
+                    success: function (data) {
+                        $('#campaign-list').html(data.html);  // Update the campaign list dynamically
                     }
                 });
             }
 
-            // Trigger AJAX when client or date changes
-            $('#client, #start_date, #end_date').on('change', function() {
+            function updateProductDropdown(client_id) {
+                $.ajax({
+                    url: "{% url 'get_products_for_client' %}",
+                    data: { client_id: client_id },
+                    success: function (data) {
+                        let productSelect = $('#product');
+                        productSelect.empty();  // Clear previous options
+                        productSelect.append('<option value="">-- Select Product --</option>');
+                        data.products.forEach(function (product) {
+                            productSelect.append('<option value="' + product + '">' + product + '</option>');
+                        });
+                    }
+                });
+            }
+
+            // Update products when client changes
+            $('#client').on('change', function () {
+                let client_id = $(this).val();
+                if (client_id) {
+                    updateProductDropdown(client_id);  // Populate product dropdown when client changes
+                    updateCampaignList();  // Automatically update the campaign list when the client changes
+                } else {
+                    $('#product').empty().append('<option value="">-- Select Product --</option>');  // Ensure product dropdown is empty if no client is selected
+                }
+            });
+
+            // Trigger AJAX when product, start_date, or end_date changes
+            $('#product, #start_date, #end_date').on('change', function () {
                 updateCampaignList();
             });
 
             // Auto-submit form on page load if values are already set
+            if ($('#client').val()) {
+                updateProductDropdown($('#client').val());  // Load products if a client is pre-selected
+            }
             if ($('#client').val() || $('#start_date').val() || $('#end_date').val()) {
                 updateCampaignList();
             }
@@ -30,25 +59,27 @@
     </script>
 </head>
 <body>
-    <h1>Filter Campaigns by Client and Date Range</h1>
-
-    <!-- The form for filtering -->
+    <h1>Filter Campaigns by Client, Product, and Date Range</h1>
     <form id="filter-form" method="get">
         <label for="client">Select Client:</label>
-        <select name="client" id="client" required>
+        <select name="client" id="client">
             <option value="">-- Select Client --</option>
             {% for client in clients %}
-                <option value="{{ client.id }}" {% if client.id == selected_client %}selected{% endif %}>
-                    {{ client.name }}
-                </option>
+                <option value="{{ client.id }}" {% if client.id == selected_client %}selected{% endif %}>{{ client.name }}</option>
             {% endfor %}
         </select>
 
+        <label for="product">Select Product:</label>
+        <select name="product" id="product">
+            <option value="">-- Select Product --</option>
+            <!-- Product options will be populated dynamically via AJAX -->
+        </select>
+
         <label for="start_date">Start Date:</label>
-        <input type="date" name="start_date" id="start_date" value="{{ selected_start_date }}" required>
+        <input type="date" name="start_date" id="start_date" value="{{ selected_start_date }}">
 
         <label for="end_date">End Date:</label>
-        <input type="date" name="end_date" id="end_date" value="{{ selected_end_date }}" required>
+        <input type="date" name="end_date" id="end_date" value="{{ selected_end_date }}">
     </form>
 
     <!-- This div will be dynamically updated with the campaigns -->
