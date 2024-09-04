@@ -27,7 +27,7 @@ class Campaign(models.Model):
     ]
 
     name = models.CharField(max_length=100)
-    user_friendly_name = models.CharField(max_length=255, null=True, blank=True)
+    product = models.CharField(max_length=255, null=True, blank=True)  # Changed from user_friendly_name to product
     client = models.ForeignKey(Client, on_delete=models.CASCADE)
     channel = models.ForeignKey(Channel, on_delete=models.CASCADE)
     campaign_type = models.CharField(max_length=10, choices=CAMPAIGN_TYPE_CHOICES)

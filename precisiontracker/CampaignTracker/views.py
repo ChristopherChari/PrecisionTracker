@@ -78,10 +78,10 @@ from .models import Campaign
 def map_campaign_name(request):
     if request.method == 'POST':
         campaign_id = request.POST.get('campaign_id')
-        user_friendly_name = request.POST.get('user_friendly_name')
+        product = request.POST.get('product')
 
         campaign = get_object_or_404(Campaign, id=campaign_id)
-        campaign.user_friendly_name = user_friendly_name
+        campaign.product = product
         campaign.save()
 
         return redirect('home')  # Redirect back to the home page after saving
@@ -133,14 +133,14 @@ def upload_campaign_report(request):
     elif request.method == 'POST' and request.POST.get('mapping_submitted'):
         # Handle the name mapping submission for both new and past campaigns
         for key in request.POST:
-            if key.startswith('user_friendly_name_'):
+            if key.startswith('product_'):
                 campaign_index = int(key.split('_')[-1])
                 csv_name = request.POST.get(f'csv_name_{campaign_index}')
-                user_friendly_name = request.POST.get(key)
+                product = request.POST.get(key)
                 
                 # Save the mapped name to the Campaign model or update it
                 campaign = Campaign.objects.get(name=csv_name)
-                campaign.user_friendly_name = user_friendly_name
+                campaign.product = product
                 campaign.save()
 
     return render(request, 'CampaignTracker/upload_campaign_report.html', {

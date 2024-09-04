@@ -10,7 +10,7 @@
 
         <ul>
             {% for campaign in data.campaigns %}
-            <li>{{ campaign.user_friendly_name|default:campaign.name }}</li>
+            <li>{{ campaign.product|default:campaign.name }}</li>
             {% endfor %}
         </ul>
     {% endfor %}

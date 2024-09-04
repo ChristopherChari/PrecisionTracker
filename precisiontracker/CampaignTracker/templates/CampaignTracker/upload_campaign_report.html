@@ -52,7 +52,7 @@
                 <td><input type="hidden" name="csv_name_{{ forloop.counter0 }}" value="{{ campaign.name }}">
                     {{ campaign.name }}</td>
                 <td>
-                    <input type="text" name="user_friendly_name_{{ forloop.counter0 }}" placeholder="Enter friendly name" value="{{ campaign.user_friendly_name }}">
+                    <input type="text" name="product_{{ forloop.counter0 }}" placeholder="Enter friendly name" value="{{ campaign.product }}">
                 </td>
             </tr>
             {% endfor %}
@@ -78,7 +78,7 @@
                 <td><input type="hidden" name="csv_name_{{ forloop.counter0 }}" value="{{ campaign.csv_name }}">
                     {{ campaign.csv_name }}</td>
                 <td>
-                    <input type="text" name="user_friendly_name_{{ forloop.counter0 }}" placeholder="Enter friendly name" value="{{ form.initial.user_friendly_name }}">
+                    <input type="text" name="product_{{ forloop.counter0 }}" placeholder="Enter friendly name" value="{{ form.initial.product }}">
                 </td>
             </tr>
             {% endfor %}

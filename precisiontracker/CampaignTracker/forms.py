@@ -15,4 +15,4 @@ class CampaignFilterForm(forms.Form):
 class CampaignNameMappingForm(forms.Form):
     campaign_id = forms.IntegerField(widget=forms.HiddenInput())
     csv_name = forms.CharField(max_length=255, disabled=True)
-    user_friendly_name = forms.CharField(max_length=255)
+    product = forms.CharField(max_length=255)
