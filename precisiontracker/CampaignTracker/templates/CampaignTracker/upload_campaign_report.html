@@ -7,85 +7,80 @@
 </head>
 <body>
     <h1>Upload Campaign Report</h1>
+
+    <!-- Display success or error messages -->
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    <!-- Campaign Upload Form -->
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
-        
-        <!-- Date Inputs -->
-        <label for="start_date">Start Date:</label>
-        <input type="date" name="start_date" id="start_date" value="{{ start_date }}" required>
 
-        <label for="end_date">End Date:</label>
-        <input type="date" name="end_date" id="end_date" value="{{ end_date }}" required>
-
-        <!-- Client Selection -->
         <label for="client">Select Client:</label>
-        <select name="client" id="client" required>
+        <select name="client" id="client">
             <option value="">-- Select Client --</option>
             {% for client in clients %}
-                <option value="{{ client.id }}" {% if client.id == client_id %}selected{% endif %}>
-                    {{ client.name }}
-                </option>
+                <option value="{{ client.id }}" {% if client.id == client_id %}selected{% endif %}>{{ client.name }}</option>
             {% endfor %}
         </select>
 
-        <!-- CSV Upload Field -->
-        <label for="campaign_file">Select Campaign CSV File:</label>
+        <label for="start_date">Start Date:</label>
+        <input type="date" name="start_date" value="{{ start_date }}">
+
+        <label for="end_date">End Date:</label>
+        <input type="date" name="end_date" value="{{ end_date }}">
+
+        <label for="channel">Select Channel:</label>
+        <select name="channel" id="channel">
+            <option value="">-- Select Channel --</option>
+            <option value="Google">Google</option>
+            <option value="Stackadapt">Stackadapt</option>
+        </select>
+
+        <label for="campaign_file">Upload CSV File:</label>
         <input type="file" name="campaign_file" id="campaign_file">
 
         <button type="submit">Upload</button>
     </form>
 
-    {% if filtered_campaigns %}
-    <h2>Past Campaigns Matching Filter</h2>
-    <form method="post">
-        {% csrf_token %}
-        <input type="hidden" name="mapping_submitted" value="true">
-        <input type="hidden" name="start_date" value="{{ start_date }}">
-        <input type="hidden" name="end_date" value="{{ end_date }}">
-        <table>
-            <tr>
-                <th>CSV Campaign Name</th>
-                <th>User-Friendly Campaign Name</th>
-            </tr>
-            {% for campaign in filtered_campaigns %}
-            <tr>
-                <td><input type="hidden" name="csv_name_{{ forloop.counter0 }}" value="{{ campaign.name }}">
-                    {{ campaign.name }}</td>
-                <td>
-                    <input type="text" name="product_{{ forloop.counter0 }}" placeholder="Enter friendly name" value="{{ campaign.product }}">
-                </td>
-            </tr>
-            {% endfor %}
-        </table>
-        <button type="submit">Save Mappings</button>
-    </form>
+    <!-- Display the CSV Campaigns Mapping form after CSV upload -->
+    {% if combined_data %}
+        <h2>Mapped Campaigns</h2>
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="mapping_submitted" value="true">
+            <table>
+                <tr>
+                    <th>CSV Campaign Name</th>
+                    <th>Product Name</th>
+                </tr>
+                {% for campaign_data, form in combined_data %}
+                <tr>
+                    <td>{{ campaign_data.csv_name }}</td>
+                    <td>
+                        <input type="text" name="product_{{ forloop.counter0 }}" value="{{ form.initial.csv_name }}">
+                        <input type="hidden" name="csv_name_{{ forloop.counter0 }}" value="{{ campaign_data.csv_name }}">
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+            <button type="submit">Save Mappings</button>
+        </form>
     {% endif %}
 
-    {% if combined_data %}
-    <h2>Map Campaign Names</h2>
-    <form method="post">
-        {% csrf_token %}
-        <input type="hidden" name="mapping_submitted" value="true">
-        <input type="hidden" name="start_date" value="{{ start_date }}">
-        <input type="hidden" name="end_date" value="{{ end_date }}">
-        <table>
-            <tr>
-                <th>CSV Campaign Name</th>
-                <th>User-Friendly Campaign Name</th>
-            </tr>
-            {% for campaign, form in combined_data %}
-            <tr>
-                <td><input type="hidden" name="csv_name_{{ forloop.counter0 }}" value="{{ campaign.csv_name }}">
-                    {{ campaign.csv_name }}</td>
-                <td>
-                    <input type="text" name="product_{{ forloop.counter0 }}" placeholder="Enter friendly name" value="{{ form.initial.product }}">
-                </td>
-            </tr>
+    <!-- Show any filtered campaigns based on the selected client and date range -->
+    {% if filtered_campaigns %}
+        <h2>Filtered Campaigns</h2>
+        <ul>
+            {% for campaign in filtered_campaigns %}
+            <li>{{ campaign.name }} ({{ campaign.start_date }} - {{ campaign.end_date }})</li>
             {% endfor %}
-        </table>
-        <button type="submit">Save Mappings</button>
-    </form>
+        </ul>
     {% endif %}
 </body>
 </html>
-

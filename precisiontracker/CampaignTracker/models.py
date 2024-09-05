@@ -9,15 +9,7 @@ class Client(models.Model):
     def __str__(self):
         return self.name
 
-class Channel(models.Model):
-    client = models.ForeignKey(Client, on_delete=models.CASCADE)
-    name = models.CharField(max_length=100)
-    description = models.TextField(blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
-    def __str__(self):
-        return self.name
 
 class Campaign(models.Model):
     CAMPAIGN_TYPE_CHOICES = [
@@ -26,10 +18,23 @@ class Campaign(models.Model):
         ('Search', 'Search'),
     ]
 
+    GOOGLE = 'Google'
+    STACKADAPT = 'Stackadapt'
+    
+    CHANNEL_CHOICES = [
+        (GOOGLE, 'Google'),
+        (STACKADAPT, 'Stackadapt'),
+    ]
+    
+    channel = models.CharField(
+        max_length=20,
+        choices=CHANNEL_CHOICES,
+        default=GOOGLE  # Default to Google
+    )
+
     name = models.CharField(max_length=100)
     product = models.CharField(max_length=255, null=True, blank=True)  # Changed from user_friendly_name to product
     client = models.ForeignKey(Client, on_delete=models.CASCADE)
-    channel = models.ForeignKey(Channel, on_delete=models.CASCADE)
     campaign_type = models.CharField(max_length=10, choices=CAMPAIGN_TYPE_CHOICES)
     start_date = models.DateField()
     end_date = models.DateField()
@@ -39,7 +44,7 @@ class Campaign(models.Model):
     clicks = models.IntegerField()
     ctr = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     cpc = models.DecimalField(max_digits=5, decimal_places=2, default=0)
-    conversions = models.IntegerField()
+    conversions = models.IntegerField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

@@ -19,6 +19,17 @@ class CampaignNameMappingForm(forms.Form):
 
 from datetime import datetime
 
+class CampaignUploadForm(forms.Form):
+    # Other fields you may have, such as for file upload
+    campaign_file = forms.FileField(label='Upload Campaign File')
+
+    # Add channel field as a dropdown
+    CHANNEL_CHOICES = [
+        ( 'Google'),
+        ( 'Stackadapt'),
+    ]
+    channel = forms.ChoiceField(choices=CHANNEL_CHOICES, label="Channel")
+
 class TargetForm(forms.ModelForm):
     class Meta:
         model = Target

@@ -1,7 +1,8 @@
 import csv
+from turtle import home
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from .models import Client, Channel, Campaign, MonthlyData
+from .models import Client, Campaign, MonthlyData
 from django.core.files.storage import FileSystemStorage
 from django.utils.dateparse import parse_date
 from .forms import CampaignForm, CampaignFilterForm
@@ -11,7 +12,7 @@ from decimal import Decimal  # Import Decimal
 
 from django.shortcuts import render, get_object_or_404
 from .models import Client, Campaign
-from .forms import CampaignNameMappingForm
+from .forms import CampaignNameMappingForm, CampaignUploadForm
 
 from django.http import JsonResponse
 from django.template.loader import render_to_string
@@ -20,6 +21,7 @@ from django.template.loader import render_to_string
 from django.shortcuts import render, redirect
 from .forms import  TargetForm
 from .models import Target, Client
+import logging
 
 def enter_targets(request):
     if request.method == 'POST':
@@ -152,15 +154,24 @@ def map_campaign_name(request):
 
         return redirect('home')  # Redirect back to the home page after saving
 
+# Initialize logger
+logger = logging.getLogger(__name__)
+
+from django.contrib import messages
+
 def upload_campaign_report(request):
     campaigns = []
-    combined_data = []
     filtered_campaigns = []
 
-    start_date = request.POST.get('start_date')
-    end_date = request.POST.get('end_date')
-    client_id = request.POST.get('client')
+    # Get the list of all clients to populate the client dropdown
+    clients = Client.objects.all()
 
+    start_date = request.POST.get('start_date')  # Start date from form input
+    end_date = request.POST.get('end_date')      # End date from form input
+    client_id = request.POST.get('client')
+    selected_channel = request.POST.get('channel')
+
+    # Filter campaigns if the client, start date, and end date are provided
     if client_id and start_date and end_date:
         client = get_object_or_404(Client, id=client_id)
         filtered_campaigns = Campaign.objects.filter(
@@ -169,6 +180,7 @@ def upload_campaign_report(request):
             end_date__lte=end_date
         )
 
+    # Handle CSV file upload
     if request.method == 'POST' and request.FILES.get('campaign_file'):
         campaign_file = request.FILES['campaign_file']
         fs = FileSystemStorage()
@@ -179,38 +191,46 @@ def upload_campaign_report(request):
         with open(fs.path(filename), mode='r', encoding='utf-8-sig') as file:
             reader = csv.DictReader(file)
             for row in reader:
-                campaign_data = {
-                    'csv_name': row['Campaign'],
-                    'budget': row['Budget'],
-                    'impressions': int(row['Impr.'].replace(',', '')),
-                    'clicks': int(row['Clicks'].replace(',', '')),
-                    'spend': float(row['Cost']),
-                    'campaign_type': row['Campaign type']
-                }
-                campaigns.append(campaign_data)
+                try:
+                    # Ensure required fields are available in the CSV row
+                    if 'Campaign' not in row or 'Campaign type' not in row:
+                        messages.error(request, f"Missing required data in row: {row}")
+                        continue
 
-                # Prepare the form for each campaign
-                mapping_form = CampaignNameMappingForm(initial={
-                    'csv_name': campaign_data['csv_name'],
-                })
+                    # Remove commas from numerical fields before converting to int or float
+                    impressions = int(row.get('Impr.', '0').replace(',', ''))  # Convert impressions to integer
+                    clicks = int(row.get('Clicks', '0').replace(',', ''))      # Convert clicks to integer
+                    spend = float(row.get('Cost', '0').replace(',', ''))       # Convert spend to float
+                    budget = float(row.get('Budget', '0').replace(',', ''))    # Convert budget to float
 
-                combined_data.append((campaign_data, mapping_form))
+                    # Create or update campaign based on the name and dates (from form)
+                    campaign, created = Campaign.objects.get_or_create(
+                        name=row['Campaign'],           # Get name from CSV
+                        start_date=start_date,          # Use start date from form
+                        end_date=end_date,              # Use end date from form
+                        client=client,                  # Use client from form
+                        defaults={
+                            'campaign_type': row['Campaign type'],
+                            'budget': budget,
+                            'spend': spend,
+                            'impressions': impressions,
+                            'clicks': clicks,
+                            'channel': selected_channel,  # Use selected channel
+                        }
+                    )
 
-    elif request.method == 'POST' and request.POST.get('mapping_submitted'):
-        # Handle the name mapping submission for both new and past campaigns
-        for key in request.POST:
-            if key.startswith('product_'):
-                campaign_index = int(key.split('_')[-1])
-                csv_name = request.POST.get(f'csv_name_{campaign_index}')
-                product = request.POST.get(key)
-                
-                # Save the mapped name to the Campaign model or update it
-                campaign = Campaign.objects.get(name=csv_name)
-                campaign.product = product
-                campaign.save()
+                    # If the campaign already exists, show an info message
+                    if not created:
+                        messages.info(request, f"Campaign '{campaign.name}' with these dates already exists.")
 
+                except ValueError as e:
+                    # Handle any errors that occur while processing the CSV row
+                    messages.error(request, f"Error processing row: {row['Campaign']} - {str(e)}")
+                    continue
+
+    # Pass the context data to the template for rendering
     return render(request, 'CampaignTracker/upload_campaign_report.html', {
-        'combined_data': combined_data,
+        'clients': clients,
         'filtered_campaigns': filtered_campaigns,
         'start_date': start_date,
         'end_date': end_date,

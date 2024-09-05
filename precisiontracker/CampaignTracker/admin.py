@@ -1,15 +1,10 @@
 from django.contrib import admin
-from .models import Client, Channel, Campaign, MonthlyData, Target
+from .models import Client, Campaign, MonthlyData, Target
 
 @admin.register(Client)
 class ClientAdmin(admin.ModelAdmin):
     list_display = ('name', 'description', 'created_at', 'updated_at')
     search_fields = ('name',)
-
-@admin.register(Channel)
-class ChannelAdmin(admin.ModelAdmin):
-    list_display = ('name', 'client', 'created_at', 'updated_at')
-    search_fields = ('name', 'client__name')
 
 @admin.register(Campaign)
 class CampaignAdmin(admin.ModelAdmin):
