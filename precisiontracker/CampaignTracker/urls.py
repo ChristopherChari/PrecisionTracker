@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from .views import filter_campaigns,  map_campaign_name, enter_targets
+from .views import filter_campaigns,  name_mapping , enter_targets
 
 
 urlpatterns = [
@@ -8,6 +8,6 @@ urlpatterns = [
     path('', filter_campaigns, name='home'),
     path('get-products/', views.get_products_for_client, name='get_products_for_client'),
     path('enter-target/', enter_targets, name='enter_target'),
-    path('map-campaign-name/', map_campaign_name, name='map_campaign_name')
+    path('map-campaign-name/', name_mapping, name='name_mapping')
     # Add other URL patterns as needed
 ]

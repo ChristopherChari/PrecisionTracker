@@ -1,4 +1,5 @@
 import csv
+from collections import defaultdict
 from turtle import home
 from django.shortcuts import render, redirect
 from django.contrib import messages
@@ -22,6 +23,7 @@ from django.shortcuts import render, redirect
 from .forms import  TargetForm
 from .models import Target, Client
 import logging
+from datetime import datetime
 
 def enter_targets(request):
     if request.method == 'POST':
@@ -143,16 +145,25 @@ def filter_campaigns(request):
         'selected_end_date': end_date,
     })
 
-def map_campaign_name(request):
+def name_mapping(request):
     if request.method == 'POST':
-        campaign_id = request.POST.get('campaign_id')
-        product = request.POST.get('product')
+        # Process the name mapping form submission
+        for key in request.POST:
+            if key.startswith('product_'):
+                campaign_name = request.POST.get(f'csv_name_{key.split("_")[-1]}')
+                product_name = request.POST.get(key)
 
-        campaign = get_object_or_404(Campaign, id=campaign_id)
-        campaign.product = product
-        campaign.save()
+                # Update all campaigns with the same name
+                Campaign.objects.filter(name=campaign_name).update(product=product_name)
 
-        return redirect('home')  # Redirect back to the home page after saving
+                messages.success(request, f"Product '{product_name}' assigned to all campaigns with the name '{campaign_name}'.")
+
+    # Fetch unique campaign names (remove duplicates)
+    campaigns = Campaign.objects.values('name', 'product').distinct()
+
+    return render(request, 'CampaignTracker/name_mapping.html', {
+        'combined_data': campaigns,
+    })
 
 # Initialize logger
 logger = logging.getLogger(__name__)
@@ -161,24 +172,15 @@ from django.contrib import messages
 
 def upload_campaign_report(request):
     campaigns = []
+    combined_data = []
     filtered_campaigns = []
+    campaign_name_to_product = {}
 
     # Get the list of all clients to populate the client dropdown
     clients = Client.objects.all()
 
-    start_date = request.POST.get('start_date')  # Start date from form input
-    end_date = request.POST.get('end_date')      # End date from form input
     client_id = request.POST.get('client')
     selected_channel = request.POST.get('channel')
-
-    # Filter campaigns if the client, start date, and end date are provided
-    if client_id and start_date and end_date:
-        client = get_object_or_404(Client, id=client_id)
-        filtered_campaigns = Campaign.objects.filter(
-            client=client,
-            start_date__gte=start_date,
-            end_date__lte=end_date
-        )
 
     # Handle CSV file upload
     if request.method == 'POST' and request.FILES.get('campaign_file'):
@@ -193,46 +195,68 @@ def upload_campaign_report(request):
             for row in reader:
                 try:
                     # Ensure required fields are available in the CSV row
-                    if 'Campaign' not in row or 'Campaign type' not in row:
+                    if 'Campaign' not in row or 'Campaign type' not in row or 'Day' not in row:
                         messages.error(request, f"Missing required data in row: {row}")
                         continue
 
-                    # Remove commas from numerical fields before converting to int or float
-                    impressions = int(row.get('Impr.', '0').replace(',', ''))  # Convert impressions to integer
-                    clicks = int(row.get('Clicks', '0').replace(',', ''))      # Convert clicks to integer
-                    spend = float(row.get('Cost', '0').replace(',', ''))       # Convert spend to float
-                    budget = float(row.get('Budget', '0').replace(',', ''))    # Convert budget to float
+                    # Convert numerical fields
+                    impressions = int(str(row.get('Impr.', 0)).replace(',', ''))  # Convert impressions to integer
+                    clicks = int(str(row.get('Clicks', 0)).replace(',', ''))      # Convert clicks to integer
+                    spend = float(str(row.get('Cost', 0)).replace(',', ''))       # Convert spend to float
+                    budget = float(str(row.get('Budget', 0)).replace(',', ''))    # Convert budget to float
 
-                    # Create or update campaign based on the name and dates (from form)
+                    # Parse the date from the 'Day' column
+                    campaign_date = datetime.strptime(row['Day'], '%d/%m/%Y').date()
+
+                    # Get or create campaign based on name and date
+                    client = get_object_or_404(Client, id=client_id)
                     campaign, created = Campaign.objects.get_or_create(
-                        name=row['Campaign'],           # Get name from CSV
-                        start_date=start_date,          # Use start date from form
-                        end_date=end_date,              # Use end date from form
-                        client=client,                  # Use client from form
+                        name=row['Campaign'],
+                        start_date=campaign_date,  # Use date from the CSV file
+                        end_date=campaign_date,    # Assuming this is a daily record
+                        client=client,
                         defaults={
                             'campaign_type': row['Campaign type'],
                             'budget': budget,
                             'spend': spend,
                             'impressions': impressions,
                             'clicks': clicks,
-                            'channel': selected_channel,  # Use selected channel
+                            'channel': selected_channel,
                         }
                     )
 
-                    # If the campaign already exists, show an info message
-                    if not created:
-                        messages.info(request, f"Campaign '{campaign.name}' with these dates already exists.")
+                    # Check if a product mapping exists for this campaign name
+                    if campaign.product:
+                        campaign_name_to_product[campaign.name] = campaign.product
+
+                    # Add campaign to combined data (for name mapping)
+                    combined_data.append(campaign)
 
                 except ValueError as e:
                     # Handle any errors that occur while processing the CSV row
                     messages.error(request, f"Error processing row: {row['Campaign']} - {str(e)}")
                     continue
 
+        # Remove duplicates from combined_data
+        unique_campaign_names = {c.name: c for c in combined_data}.values()
+        combined_data = list(unique_campaign_names)
+
+    # Handle name mapping update
+    elif request.method == 'POST' and request.POST.get('mapping_submitted'):
+        for key in request.POST:
+            if key.startswith('product_'):
+                csv_name = request.POST.get(f'csv_name_{key.split("_")[1]}')
+                product_name = request.POST.get(key)
+
+                # Update all campaigns with the same name
+                campaigns_with_same_name = Campaign.objects.filter(name=csv_name)
+                campaigns_with_same_name.update(product=product_name)
+                messages.success(request, f"Product '{product_name}' assigned to all campaigns named '{csv_name}'.")
+
     # Pass the context data to the template for rendering
     return render(request, 'CampaignTracker/upload_campaign_report.html', {
         'clients': clients,
+        'combined_data': combined_data,
         'filtered_campaigns': filtered_campaigns,
-        'start_date': start_date,
-        'end_date': end_date,
         'client_id': client_id,
     })

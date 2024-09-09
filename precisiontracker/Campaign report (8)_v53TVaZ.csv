@@ -1,0 +1,9 @@
+Campaign status,Campaign,Budget name,Currency code,Budget,Budget type,Status,Status reasons,Campaign group,Campaign type,Cost,Impr.,Clicks
+Enabled,_bgl_collagen_uk_display_cpc_traffic_aug_2024_, --,GBP,43.33,Daily,Eligible,unknown, --,Display,163.5,"631,890","3,206"
+Enabled,_pcm_bgl_vg_sk_uk_display_cpc_traffic_sep_2024_, --,GBP,27.58,Daily,Eligible (Learning),bidding strategy learning; unknown, --,Display,0,0,0
+Enabled,_bgl_collagen_uk_video_cpm_traffic_aug_2024_, --,GBP,40,Daily,Eligible (Limited),limited by budget; unknown, --,Video,237.38,"40,825",49
+Enabled,_pcm_bgl_vg_sk_uk_search_cpc_traffic_sep_2024_, --,GBP,34.48,Daily,Eligible (Learning),bidding strategy learning; unknown, --,Search,0,0,0
+Enabled,_bgl_bb_uk_search_cpc_traffic_aug_2024_, --,GBP,40,Daily,Eligible,unknown, --,Search,226.53,"4,133",445
+Enabled,_bgl_collagen_uk_search_cpc_traffic_aug_2024_, --,GBP,50,Daily,Eligible (Learning),bidding strategy learning; unknown, --,Search,292.67,"6,089",650
+Enabled,_bgl_bb_uk_display_cpc_traffic_aug_2024_, --,GBP,20,Daily,Eligible,some ads disapproved, --,Display,102.06,"389,044","2,105"
+Enabled,_bgl_bb_uk_video_cpm_traffic_aug_2024_, --,GBP,26.66,Daily,Eligible (Limited),limited by budget; unknown, --,Video,157.73,"91,416",16

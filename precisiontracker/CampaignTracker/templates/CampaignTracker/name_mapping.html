@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Map Campaign Names</title>
+</head>
+<body>
+    <h1>Map Campaign Names to Products</h1>
+
+    <!-- Display success or error messages -->
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    <!-- Display the CSV Campaigns Mapping form -->
+    <form method="post">
+        {% csrf_token %}
+        <table>
+            <tr>
+                <th>Campaign Name</th>
+                <th>Assign Product</th>
+            </tr>
+            {% for campaign_data in combined_data %}
+            <tr>
+                <td>{{ campaign_data.name }}</td>
+                <td>
+                    <input type="text" name="product_{{ forloop.counter0 }}" value="{{ campaign_data.product }}">
+                    <input type="hidden" name="csv_name_{{ forloop.counter0 }}" value="{{ campaign_data.name }}">
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+        <button type="submit">Save Mappings</button>
+    </form>
+</body>
+</html>

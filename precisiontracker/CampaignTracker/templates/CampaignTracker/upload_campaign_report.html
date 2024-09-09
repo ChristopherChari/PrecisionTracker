@@ -29,12 +29,6 @@
             {% endfor %}
         </select>
 
-        <label for="start_date">Start Date:</label>
-        <input type="date" name="start_date" value="{{ start_date }}">
-
-        <label for="end_date">End Date:</label>
-        <input type="date" name="end_date" value="{{ end_date }}">
-
         <label for="channel">Select Channel:</label>
         <select name="channel" id="channel">
             <option value="">-- Select Channel --</option>
@@ -59,12 +53,13 @@
                     <th>CSV Campaign Name</th>
                     <th>Product Name</th>
                 </tr>
-                {% for campaign_data, form in combined_data %}
+
+                {% for campaign_data in combined_data %}
                 <tr>
-                    <td>{{ campaign_data.csv_name }}</td>
+                    <td>{{ campaign_data.name }}</td>
                     <td>
-                        <input type="text" name="product_{{ forloop.counter0 }}" value="{{ form.initial.csv_name }}">
-                        <input type="hidden" name="csv_name_{{ forloop.counter0 }}" value="{{ campaign_data.csv_name }}">
+                        <input type="text" name="product_{{ forloop.counter0 }}" value="{{ campaign_data.product }}">
+                        <input type="hidden" name="csv_name_{{ forloop.counter0 }}" value="{{ campaign_data.name }}">
                     </td>
                 </tr>
                 {% endfor %}
@@ -73,7 +68,7 @@
         </form>
     {% endif %}
 
-    <!-- Show any filtered campaigns based on the selected client and date range -->
+    <!-- Show any filtered campaigns based on the selected client -->
     {% if filtered_campaigns %}
         <h2>Filtered Campaigns</h2>
         <ul>
@@ -84,3 +79,4 @@
     {% endif %}
 </body>
 </html>
+
