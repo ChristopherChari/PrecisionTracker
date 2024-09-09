@@ -7,6 +7,7 @@ from .models import Client, Campaign, MonthlyData
 from django.core.files.storage import FileSystemStorage
 from django.utils.dateparse import parse_date
 from .forms import CampaignForm, CampaignFilterForm
+from django.db import transaction
 
 from datetime import timedelta
 from decimal import Decimal  # Import Decimal
@@ -187,12 +188,14 @@ def name_mapping(request):
 logger = logging.getLogger(__name__)
 
 from django.contrib import messages
-
 def upload_campaign_report(request):
     campaigns = []
     combined_data = []
     filtered_campaigns = []
     campaign_name_to_product = {}
+    new_clients = []
+    duplicate_campaigns = []
+    error_rows = []
 
     # Get the list of all clients to populate the client dropdown for future use
     clients = Client.objects.all()
@@ -206,65 +209,109 @@ def upload_campaign_report(request):
         filename = fs.save(campaign_file.name, campaign_file)
         uploaded_file_url = fs.url(filename)
 
-        # Parse CSV file
-        with open(fs.path(filename), mode='r', encoding='utf-8-sig') as file:
-            reader = csv.DictReader(file)
-            for row in reader:
-                try:
-                    # Ensure required fields are available in the CSV row
-                    if 'Campaign' not in row or 'Campaign type' not in row or 'Day' not in row or 'Account name' not in row:
-                        messages.error(request, f"Missing required data in row: {row}")
-                        continue
+        with transaction.atomic():
+            # Parse CSV file
+            with open(fs.path(filename), mode='r', encoding='utf-8-sig') as file:
+                reader = csv.DictReader(file)
+                for row_number, row in enumerate(reader, start=2):  # Start at 2 assuming header is row 1
+                    try:
+                        # Ensure required fields are available in the CSV row
+                        required_fields = ['Campaign', 'Campaign type', 'Day', 'Account name']
+                        if not all(field in row and row[field].strip() for field in required_fields):
+                            error_rows.append(f"Row {row_number}: Missing required fields.")
+                            continue
 
-                    # Convert numerical fields
-                    impressions = int(str(row.get('Impr.', 0)).replace(',', ''))  # Convert impressions to integer
-                    clicks = int(str(row.get('Clicks', 0)).replace(',', ''))      # Convert clicks to integer
-                    spend = float(str(row.get('Cost', 0)).replace(',', ''))       # Convert spend to float
-                    budget = float(str(row.get('Budget', 0)).replace(',', ''))    # Convert budget to float
+                        # Convert numerical fields with validation
+                        try:
+                            impressions = int(str(row.get('Impr.', 0)).replace(',', ''))  # Convert impressions to integer
+                            clicks = int(str(row.get('Clicks', 0)).replace(',', ''))      # Convert clicks to integer
+                            spend = Decimal(str(row.get('Cost', 0)).replace(',', ''))
+                            budget = Decimal(str(row.get('Budget', 0)).replace(',', ''))
+                        except ValueError:
+                            error_rows.append(f"Row {row_number}: Invalid numerical data.")
+                            continue
 
-                    # Parse the date from the 'Day' column
-                    campaign_date = datetime.strptime(row['Day'], '%d/%m/%Y').date()
+                        # Parse the date from the 'Day' column
+                        try:
+                            campaign_date = datetime.strptime(row['Day'], '%d/%m/%Y').date()
+                        except ValueError:
+                            error_rows.append(f"Row {row_number}: Invalid date format.")
+                            continue
 
-                    # Get or create client based on 'Account name' column
-                    client_name = row['Account name']
-                    client, client_created = Client.objects.get_or_create(
-                        name=client_name
-                    )
+                      
+                        # Get or create client based on 'Account name' column
+                        client_name = row['Account name'].strip()
+                        client, client_created = Client.objects.get_or_create(
+                            name__iexact=client_name,
+                            defaults={'name': client_name}
+                        )
 
-                    if client_created:
-                        messages.success(request, f"New client '{client_name}' created.")
+                        if client_created:
+                            new_clients.append(client_name)
 
-                    # Get or create campaign based on name and date
-                    campaign, created = Campaign.objects.get_or_create(
-                        name=row['Campaign'],
-                        start_date=campaign_date,  # Use date from the CSV file
-                        end_date=campaign_date,    # Assuming this is a daily record
-                        client=client,             # Pass the Client object, not the name
-                        defaults={
-                            'campaign_type': row['Campaign type'],
-                            'budget': budget,
-                            'spend': spend,
-                            'impressions': impressions,
-                            'clicks': clicks,
-                            'channel': selected_channel,
+                        # Define uniqueness criteria
+                        campaign_unique_fields = {
+                            'name': row['Campaign'].strip(),
+                            'start_date': campaign_date,
+                            'end_date': campaign_date,
+                            'client': client,
                         }
-                    )
 
-                    # Check if a product mapping exists for this campaign name
-                    if campaign.product:
-                        campaign_name_to_product[campaign.name] = campaign.product
+                        # Attempt to get the existing campaign
+                        campaign, created = Campaign.objects.get_or_create(
+                            **campaign_unique_fields,
+                            defaults={
+                                'campaign_type': row['Campaign type'].strip(),
+                                'budget': budget,
+                                'spend': spend,
+                                'impressions': impressions,
+                                'clicks': clicks,
+                                'channel': selected_channel,
+                            }
+                        )
 
-                    # Add campaign to combined data (for name mapping)
-                    combined_data.append(campaign)
+                        if not created:
+                            # If campaign exists, update its metrics
+                            campaign.spend = Decimal(campaign.spend) + spend
+                            campaign.impressions += impressions
+                            campaign.clicks += clicks
+                            # Optionally, update other fields if necessary
+                            campaign.save()
+                            duplicate_campaigns.append(campaign.name)
+                        else:
+                            # New campaign created
+                            pass
 
-                except ValueError as e:
-                    # Handle any errors that occur while processing the CSV row
-                    messages.error(request, f"Error processing row: {row['Campaign']} - {str(e)}")
-                    continue
+                        # Check if a product mapping exists for this campaign name
+                        if campaign.product:
+                            campaign_name_to_product[campaign.name] = campaign.product
+
+                        # Add campaign to combined data (for name mapping)
+                        combined_data.append(campaign)
+
+                    except Exception as e:
+                        # Catch-all for any unexpected errors
+                        error_rows.append(f"Row {row_number}: {row.get('Campaign', 'Unknown Campaign')} - {str(e)}")
+                        continue
 
         # Remove duplicates from combined_data
         unique_campaign_names = {c.name: c for c in combined_data}.values()
         combined_data = list(unique_campaign_names)
+
+        # Notify about new clients
+        if new_clients:
+            unique_new_clients = set(new_clients)
+            messages.success(request, f"New clients created: {', '.join(unique_new_clients)}.")
+
+        # Notify about duplicate campaigns
+        if duplicate_campaigns:
+            unique_duplicate_campaigns = set(duplicate_campaigns)
+            messages.warning(request, f"Updated existing campaigns: {', '.join(unique_duplicate_campaigns)}.")
+
+        # Notify about errors
+        if error_rows:
+            error_message = "Errors encountered during upload:\n" + "\n".join(error_rows)
+            messages.error(request, error_message)
 
     # Handle name mapping update
     elif request.method == 'POST' and request.POST.get('mapping_submitted'):
