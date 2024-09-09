@@ -1,7 +1,8 @@
 {% if campaigns_by_type %}
     <h2>Filtered Campaigns by Type</h2>
     {% for campaign_type, data in campaigns_by_type.items %}
-        <h3>{{ campaign_type }}</h3>
+        <h3>{{ data.product }} {{ campaign_type }}</h3>
+       
         <p>Total Spend: {{ data.total_spend }}</p>
         <p>Total Impressions: {{ data.total_impressions }}</p>
         <p>Total Clicks: {{ data.total_clicks }}</p>
@@ -16,7 +17,7 @@
         <p>Target CPC: {{ data.target_cpc|floatformat:2 }}</p>
         <ul>
             {% for campaign in data.campaigns %}
-            <li>{{ campaign.product|default:campaign.name }}</li>
+            
             {% endfor %}
         </ul>
     {% endfor %}

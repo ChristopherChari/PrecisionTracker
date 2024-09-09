@@ -21,13 +21,6 @@
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
 
-        <label for="client">Select Client:</label>
-        <select name="client" id="client">
-            <option value="">-- Select Client --</option>
-            {% for client in clients %}
-                <option value="{{ client.id }}" {% if client.id == client_id %}selected{% endif %}>{{ client.name }}</option>
-            {% endfor %}
-        </select>
 
         <label for="channel">Select Channel:</label>
         <select name="channel" id="channel">

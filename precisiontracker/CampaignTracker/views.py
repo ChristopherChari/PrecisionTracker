@@ -79,17 +79,30 @@ def filter_campaigns(request):
         end_date = parse_date(end_date)
         total_days_selected = (end_date - start_date).days + 1
 
-        campaigns = Campaign.objects.filter(client=client, product=product, start_date__gte=start_date, end_date__lte=end_date)
+        campaigns = Campaign.objects.filter(
+            client=client,
+            product=product,
+            start_date__gte=start_date,
+            end_date__lte=end_date
+        )
 
         for campaign in campaigns:
             campaign_type = campaign.campaign_type
 
             # Fetch the specific target for this campaign type
-            target = Target.objects.filter(client=client, product=product, campaign_type=campaign_type, month__year=start_date.year, month__month=start_date.month).first()
+            target = Target.objects.filter(
+                client=client,
+                product=product,
+                campaign_type=campaign_type,
+                month__year=start_date.year,
+                month__month=start_date.month
+            ).first()
 
             if target:
-                days_in_month = (target.month.replace(month=target.month.month % 12 + 1, day=1) - timedelta(days=1)).day
-                proportion_of_month = Decimal(total_days_selected) / Decimal(days_in_month)
+                days_in_month = (target.month.replace(
+                    month=target.month.month % 12 + 1, day=1) - timedelta(days=1)).day
+                proportion_of_month = Decimal(
+                    total_days_selected) / Decimal(days_in_month)
 
                 # Calculate the dynamic targets
                 target_spend = target.target_spend * proportion_of_month
@@ -97,14 +110,17 @@ def filter_campaigns(request):
                 target_clicks = target.target_clicks * proportion_of_month
 
                 # Calculate target CPC and CTR (not stored in the database)
-                target_ctr = (target_clicks / target_impressions) * 100 if target_impressions > 0 else 0
-                target_cpc = target_spend / target_clicks if target_clicks > 0 else 0
+                target_ctr = (target_clicks / target_impressions) * \
+                    100 if target_impressions > 0 else 0
+                target_cpc = target_spend / \
+                    target_clicks if target_clicks > 0 else 0
             else:
                 target_spend = target_impressions = target_clicks = 0
                 target_ctr = target_cpc = 0
 
             if campaign_type not in campaigns_by_type:
                 campaigns_by_type[campaign_type] = {
+                    'product': product,  # Ensure product name is only shown once
                     'campaigns': [],
                     'total_impressions': 0,
                     'total_clicks': 0,
@@ -125,8 +141,10 @@ def filter_campaigns(request):
 
         for campaign_type, data in campaigns_by_type.items():
             if data['total_clicks'] > 0:
-                data['total_ctr'] = (data['total_clicks'] / data['total_impressions']) * 100 if data['total_impressions'] > 0 else 0
-                data['total_cpc'] = data['total_spend'] / data['total_clicks'] if data['total_clicks'] > 0 else 0
+                data['total_ctr'] = (data['total_clicks'] / data['total_impressions']) * \
+                    100 if data['total_impressions'] > 0 else 0
+                data['total_cpc'] = data['total_spend'] / \
+                    data['total_clicks'] if data['total_clicks'] > 0 else 0
 
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         rendered_campaigns = render_to_string('CampaignTracker/campaign_list.html', {
@@ -176,10 +194,9 @@ def upload_campaign_report(request):
     filtered_campaigns = []
     campaign_name_to_product = {}
 
-    # Get the list of all clients to populate the client dropdown
+    # Get the list of all clients to populate the client dropdown for future use
     clients = Client.objects.all()
 
-    client_id = request.POST.get('client')
     selected_channel = request.POST.get('channel')
 
     # Handle CSV file upload
@@ -195,7 +212,7 @@ def upload_campaign_report(request):
             for row in reader:
                 try:
                     # Ensure required fields are available in the CSV row
-                    if 'Campaign' not in row or 'Campaign type' not in row or 'Day' not in row:
+                    if 'Campaign' not in row or 'Campaign type' not in row or 'Day' not in row or 'Account name' not in row:
                         messages.error(request, f"Missing required data in row: {row}")
                         continue
 
@@ -208,13 +225,21 @@ def upload_campaign_report(request):
                     # Parse the date from the 'Day' column
                     campaign_date = datetime.strptime(row['Day'], '%d/%m/%Y').date()
 
+                    # Get or create client based on 'Account name' column
+                    client_name = row['Account name']
+                    client, client_created = Client.objects.get_or_create(
+                        name=client_name
+                    )
+
+                    if client_created:
+                        messages.success(request, f"New client '{client_name}' created.")
+
                     # Get or create campaign based on name and date
-                    client = get_object_or_404(Client, id=client_id)
                     campaign, created = Campaign.objects.get_or_create(
                         name=row['Campaign'],
                         start_date=campaign_date,  # Use date from the CSV file
                         end_date=campaign_date,    # Assuming this is a daily record
-                        client=client,
+                        client=client,             # Pass the Client object, not the name
                         defaults={
                             'campaign_type': row['Campaign type'],
                             'budget': budget,
@@ -258,5 +283,4 @@ def upload_campaign_report(request):
         'clients': clients,
         'combined_data': combined_data,
         'filtered_campaigns': filtered_campaigns,
-        'client_id': client_id,
     })
