@@ -178,16 +178,35 @@ def name_mapping(request):
 
                 # Update all campaigns with the same name
                 Campaign.objects.filter(name=campaign_name).update(product=product_name)
-
                 messages.success(request, f"Product '{product_name}' assigned to all campaigns with the name '{campaign_name}'.")
 
     # Fetch unique campaign names (remove duplicates)
     campaigns = Campaign.objects.values('name', 'product').distinct()
 
+    # Fetch clients for the dropdown
+    clients = Client.objects.all()
+
     return render(request, 'CampaignTracker/name_mapping.html', {
         'combined_data': campaigns,
+        'clients': clients,
     })
 
+def name_mapping_ajax(request):
+    client_id = request.GET.get('client')
+    channel = request.GET.get('channel')
+
+    # Filter campaigns based on client and channel
+    campaigns = Campaign.objects.values('name', 'product').distinct()
+    if client_id:
+        campaigns = campaigns.filter(client_id=client_id)
+    if channel:
+        campaigns = campaigns.filter(channel=channel)
+
+    # Render the filtered data into the table
+    rendered_table = render_to_string('CampaignTracker/name_mapping_table.html', {
+        'combined_data': campaigns,
+    })
+    return JsonResponse({'html': rendered_table})
 # Initialize logger
 logger = logging.getLogger(__name__)
 

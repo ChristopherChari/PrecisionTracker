@@ -1,0 +1,13 @@
+<tr>
+    <th>Campaign Name</th>
+    <th>Assign Product</th>
+</tr>
+{% for campaign_data in combined_data %}
+<tr>
+    <td>{{ campaign_data.name }}</td>
+    <td>
+        <input type="text" name="product_{{ forloop.counter0 }}" value="{{ campaign_data.product }}">
+        <input type="hidden" name="csv_name_{{ forloop.counter0 }}" value="{{ campaign_data.name }}">
+    </td>
+</tr>
+{% endfor %}

@@ -4,9 +4,49 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Map Campaign Names</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Function to load filtered campaigns via AJAX
+            function loadFilteredCampaigns() {
+                const clientId = $('#client-filter').val();
+                const channel = $('#channel-filter').val();
+
+                $.ajax({
+                    url: "{% url 'name_mapping_ajax' %}",
+                    data: {
+                        client: clientId,
+                        channel: channel
+                    },
+                    success: function(response) {
+                        $('#campaign-mapping-table').html(response.html);
+                    }
+                });
+            }
+
+            // Trigger campaign filter when dropdowns change
+            $('#client-filter, #channel-filter').on('change', loadFilteredCampaigns);
+        });
+    </script>
 </head>
 <body>
     <h1>Map Campaign Names to Products</h1>
+
+    <!-- Filter dropdowns -->
+    <label for="client-filter">Select Client:</label>
+    <select id="client-filter">
+        <option value="">-- All Clients --</option>
+        {% for client in clients %}
+        <option value="{{ client.id }}">{{ client.name }}</option>
+        {% endfor %}
+    </select>
+
+    <label for="channel-filter">Select Channel:</label>
+    <select id="channel-filter">
+        <option value="">-- All Channels --</option>
+        <option value="Google">Google</option>
+        <option value="Stackadapt">Stackadapt</option>
+    </select>
 
     <!-- Display success or error messages -->
     {% if messages %}
@@ -17,23 +57,11 @@
     </ul>
     {% endif %}
 
-    <!-- Display the CSV Campaigns Mapping form -->
+    <!-- Campaigns table -->
     <form method="post">
         {% csrf_token %}
-        <table>
-            <tr>
-                <th>Campaign Name</th>
-                <th>Assign Product</th>
-            </tr>
-            {% for campaign_data in combined_data %}
-            <tr>
-                <td>{{ campaign_data.name }}</td>
-                <td>
-                    <input type="text" name="product_{{ forloop.counter0 }}" value="{{ campaign_data.product }}">
-                    <input type="hidden" name="csv_name_{{ forloop.counter0 }}" value="{{ campaign_data.name }}">
-                </td>
-            </tr>
-            {% endfor %}
+        <table id="campaign-mapping-table">
+            {% include 'CampaignTracker/name_mapping_table.html' %}
         </table>
         <button type="submit">Save Mappings</button>
     </form>
