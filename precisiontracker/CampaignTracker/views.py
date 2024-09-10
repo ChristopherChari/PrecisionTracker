@@ -31,6 +31,7 @@ CAMPAIGN_GROUP_TO_CLIENT = {
     "Haliborange": "Haliborange - PCM",
     "BIOGLAN": "Bioglan",
     "PROMENSIL" : "Promensil",
+    "Skin Doctors" : "Skin Doctors - PCM"
 }
 
 def get_or_create_client_from_campaign_group(campaign_group):
@@ -81,6 +82,7 @@ def filter_campaigns(request):
     campaigns_by_type = {}
     client_id = request.GET.get('client', request.session.get('selected_client'))
     product = request.GET.get('product', request.session.get('selected_product'))
+    selected_channel = request.GET.get('channel', request.session.get('selected_channel'))
     start_date = request.GET.get('start_date', request.session.get('selected_start_date'))
     end_date = request.GET.get('end_date', request.session.get('selected_end_date'))
 
@@ -89,27 +91,44 @@ def filter_campaigns(request):
         request.session['selected_client'] = client_id
     if product:
         request.session['selected_product'] = product
+    if selected_channel:
+        request.session['selected_channel'] = selected_channel
     if start_date:
         request.session['selected_start_date'] = start_date
     if end_date:
         request.session['selected_end_date'] = end_date
 
-    # Check for client, product, start_date, and end_date to filter campaigns
+    # Check for client, product, start_date, end_date, and channel to filter campaigns
     if client_id and product and start_date and end_date:
         client = get_object_or_404(Client, id=client_id)
         start_date = parse_date(start_date)
         end_date = parse_date(end_date)
         total_days_selected = (end_date - start_date).days + 1
 
-        # Fetch campaigns by filtering the relevant fields
-        campaigns = Campaign.objects.filter(client=client, product=product, start_date__gte=start_date, end_date__lte=end_date)
+        # Fetch campaigns based on the selected filters (including channel)
+        campaigns = Campaign.objects.filter(
+            client=client,
+            product=product,
+            start_date__gte=start_date,
+            end_date__lte=end_date,
+        )
+        
+        # If a channel is selected, filter by it
+        if selected_channel:
+            campaigns = campaigns.filter(channel=selected_channel)
 
         for campaign in campaigns:
-            campaign_type = campaign.campaign_type
+            campaign_type = f"{campaign.channel} {campaign.campaign_type}"  # Prefix campaign type with channel
 
-            # Fetch target for this campaign type
-            target = Target.objects.filter(client=client, product=product, campaign_type=campaign_type,
-                                           month__year=start_date.year, month__month=start_date.month).first()
+            # Fetch the target for this campaign type and channel
+            target = Target.objects.filter(
+                client=client,
+                product=product,
+                campaign_type=campaign.campaign_type,
+                month__year=start_date.year,
+                month__month=start_date.month,
+                channel=campaign.channel  # Ensure we're fetching the target for the right channel
+            ).first()
 
             if target:
                 days_in_month = (target.month.replace(month=target.month.month % 12 + 1, day=1) - timedelta(days=1)).day
@@ -119,7 +138,6 @@ def filter_campaigns(request):
                 target_spend = target.target_spend * proportion_of_month
                 target_impressions = target.target_impressions * proportion_of_month
                 target_clicks = target.target_clicks * proportion_of_month
-
                 target_ctr = (target_clicks / target_impressions) * 100 if target_impressions > 0 else 0
                 target_cpc = target_spend / target_clicks if target_clicks > 0 else 0
             else:
@@ -164,9 +182,11 @@ def filter_campaigns(request):
         'campaigns_by_type': campaigns_by_type,
         'selected_client': client_id,
         'selected_product': product,
+        'selected_channel': selected_channel,
         'selected_start_date': start_date,
         'selected_end_date': end_date,
     })
+
 
 def name_mapping(request):
     if request.method == 'POST':

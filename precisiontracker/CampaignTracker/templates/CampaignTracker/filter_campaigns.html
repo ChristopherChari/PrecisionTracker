@@ -24,7 +24,6 @@
             }
 
             // Function to update the campaign list based on selected filters
-           // Function to update the campaign list based on selected filters
             function updateCampaignList() {
                 $.ajax({
                     url: "{% url 'home' %}",
@@ -34,7 +33,6 @@
                     }
                 });
             }
-
 
             // Trigger the product dropdown update when a client is selected
             $('#client').on('change', function () {
@@ -47,7 +45,7 @@
             });
 
             // Trigger the campaign list update when any filter changes
-            $('#client, #product, #start_date, #end_date').on('change', function () {
+            $('#client, #product, #channel, #start_date, #end_date').on('change', function () {
                 updateCampaignList();
             });
 
@@ -55,14 +53,17 @@
             $('#product').empty().append('<option value="">-- Select Product --</option>');
 
             // If filters are already selected, auto-update the campaign list
-            if ($('#client').val() || $('#start_date').val() || $('#end_date').val()) {
+            if ($('#client').val() || $('#start_date').val() || $('#end_date').val() || $('#channel').val()) {
                 updateCampaignList();
             }
         });
     </script>
 </head>
 <body>
-    <h1>Filter Campaigns by Client, Product, and Date Range</h1>
+    <h1>Filter Campaigns by Client, Product, Channel, and Date Range</h1>
+
+    {% include 'nav.html' %}
+
     <form id="filter-form" method="get">
         <label for="client">Select Client:</label>
         <select name="client" id="client">
@@ -75,6 +76,13 @@
         <label for="product">Select Product:</label>
         <select name="product" id="product">
             <option value="">-- Select Product --</option>
+        </select>
+
+        <label for="channel">Select Channel:</label>
+        <select name="channel" id="channel">
+            <option value="">-- All Channels --</option>
+            <option value="Google" {% if selected_channel == 'Google' %}selected{% endif %}>Google</option>
+            <option value="Stackadapt" {% if selected_channel == 'Stackadapt' %}selected{% endif %}>Stackadapt</option>
         </select>
 
         <label for="start_date">Start Date:</label>
@@ -99,27 +107,28 @@
             <tbody>
                 {% for campaign_type, data in campaigns_by_type.items %}
                 <tr>
+                    <!-- Display the campaign type with the channel prefix -->
                     <td colspan="6"><strong>{{ campaign_type }}</strong></td>
                 </tr>
                 <tr>
                     <td>Targets</td>
-                    <td>{{ data.target_spend }}</td>
-                    <td>{{ data.target_impressions }}</td>
-                    <td>{{ data.target_clicks }}</td>
-                    <td>{{ data.target_ctr }}</td>
-                    <td>{{ data.target_cpc }}</td>
+                    <td>{{ data.target_spend|floatformat:2 }}</td>
+                    <td>{{ data.target_impressions|floatformat:0 }}</td>
+                    <td>{{ data.target_clicks|floatformat:0 }}</td>
+                    <td>{{ data.target_ctr|floatformat:2 }}</td>
+                    <td>{{ data.target_cpc|floatformat:2 }}</td>
                 </tr>
                 <tr>
                     <td>Actuals</td>
-                    <td>{{ data.total_spend }}</td>
-                    <td>{{ data.total_impressions }}</td>
-                    <td>{{ data.total_clicks }}</td>
-                    <td>{{ data.total_ctr }}</td>
-                    <td>{{ data.total_cpc }}</td>
+                    <td>{{ data.total_spend|floatformat:2 }}</td>
+                    <td>{{ data.total_impressions|floatformat:0 }}</td>
+                    <td>{{ data.total_clicks|floatformat:0}}</td>
+                    <td>{{ data.total_ctr|floatformat:2 }}</td>
+                    <td>{{ data.total_cpc|floatformat:2 }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
-        </table>        
+        </table>
     </div>
 </body>
 </html>
