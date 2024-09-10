@@ -26,9 +26,9 @@
         <tr>
             <td>Targets</td>
             <td>£{{ data.target_spend|floatformat:2 }}</td>
-            <td>{{ data.target_impressions }}</td>
-            <td>{{ data.target_clicks }}</td>
-            <td>{{ data.target_ctr|floatformat:2 }}</td>
+            <td>{{ data.target_impressions|floatformat:0 }}</td> <!-- Force no decimal points -->
+            <td>{{ data.target_clicks|floatformat:0 }}</td>      <!-- Force no decimal points -->
+            <td>{{ data.target_ctr|floatformat:2 }}%</td>
             <td>£{{ data.target_cpc|floatformat:2 }}</td>
         </tr>
         <tr>
@@ -39,15 +39,15 @@
             </td>
             <!-- Impressions: Red if actual impressions < target impressions, otherwise green -->
             <td class="{% if data.total_impressions < data.target_impressions %}red{% else %}green{% endif %}">
-                {{ data.total_impressions }}
+                {{ data.total_impressions|floatformat:0 }}
             </td>
             <!-- Clicks: Red if actual clicks < target clicks, otherwise green -->
             <td class="{% if data.total_clicks < data.target_clicks %}red{% else %}green{% endif %}">
-                {{ data.total_clicks }}
+                {{ data.total_clicks|floatformat:0 }}
             </td>
             <!-- CTR: Red if actual CTR < target CTR, otherwise green -->
             <td class="{% if data.total_ctr < data.target_ctr %}red{% else %}green{% endif %}">
-                {{ data.total_ctr|floatformat:2 }}
+                {{ data.total_ctr|floatformat:2 }}%
             </td>
             <!-- CPC: Red if actual CPC > target CPC, otherwise green -->
             <td class="{% if data.total_cpc > data.target_cpc %}red{% else %}green{% endif %}">
@@ -56,4 +56,4 @@
         </tr>
         {% endfor %}
     </tbody>
-</
+</table>
