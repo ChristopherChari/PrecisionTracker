@@ -33,9 +33,11 @@ class CampaignUploadForm(forms.Form):
 class TargetForm(forms.ModelForm):
     class Meta:
         model = Target
-        fields = ['client', 'product', 'campaign_type', 'month', 'target_spend', 'target_impressions', 'target_clicks']
+        fields = ['client', 'product', 'campaign_type', 'month', 'target_spend', 'target_impressions', 'target_clicks', 'channel']
+
         widgets = {
-            'month': forms.DateInput(attrs={'type': 'month'}, format='%Y-%m')  # Ensure the format matches 'YYYY-MM'
+             'month': forms.DateInput(attrs={'type': 'month'}, format='%Y-%m'),  # Ensure the format matches 'YYYY-MM'
+            'channel': forms.Select(choices=Target.CHANNEL_CHOICES),
         }
 
     def __init__(self, *args, **kwargs):

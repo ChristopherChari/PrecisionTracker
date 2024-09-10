@@ -43,43 +43,34 @@
     <form method="post">
         {% csrf_token %}
         
-        <div>
-            <label for="id_client">Select Client:</label>
-            {{ form.client }}
-        </div>
-    
-        <div>
-            <label for="id_product">Select Product:</label>
-            {{ form.product }}
-        </div>
-    
-        <div>
-            <label for="id_campaign_type">Campaign Type:</label>
-            {{ form.campaign_type }}
-        </div>
-    
-        <div>
-            <label for="id_month">Select Month:</label>
-            {{ form.month }}  <!-- This uses the month-only input type -->
-        </div>
-    
-        <div>
-            <label for="id_target_spend">Target Spend:</label>
-            {{ form.target_spend }}
-        </div>
-    
-        <div>
-            <label for="id_target_impressions">Target Impressions:</label>
-            {{ form.target_impressions }}
-        </div>
-    
-        <div>
-            <label for="id_target_clicks">Target Clicks:</label>
-            {{ form.target_clicks }}
-        </div>
-    
-        <button type="submit">Save Targets</button>
+        <label for="client">Client:</label>
+        {{ form.client }}
+        
+        <label for="product">Product:</label>
+        {{ form.product }}
+        
+        <label for="campaign_type">Campaign Type:</label>
+        {{ form.campaign_type }}
+        
+        <label for="month">Month:</label>
+        {{ form.month }}
+        
+        <label for="target_spend">Target Spend:</label>
+        {{ form.target_spend }}
+        
+        <label for="target_impressions">Target Impressions:</label>
+        {{ form.target_impressions }}
+        
+        <label for="target_clicks">Target Clicks:</label>
+        {{ form.target_clicks }}
+        
+        <!-- Add Channel Field -->
+        <label for="channel">Channel:</label>
+        {{ form.channel }}
+        
+        <button type="submit">Save</button>
     </form>
+    
     
     {% if form.errors %}
     <div class="form-errors">

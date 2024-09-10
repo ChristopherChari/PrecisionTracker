@@ -78,6 +78,14 @@ class Target(models.Model):
         ('Search', 'Search'),
     ]
 
+    GOOGLE = 'Google'
+    STACKADAPT = 'Stackadapt'
+    
+    CHANNEL_CHOICES = [
+        (GOOGLE, 'Google'),
+        (STACKADAPT, 'Stackadapt'),
+    ]
+
     product = models.CharField(max_length=255)  # Or ForeignKey if a product model exists
     client = models.ForeignKey(Client, on_delete=models.CASCADE)  # Link to client
     campaign_type = models.CharField(max_length=10, choices=CAMPAIGN_TYPE_CHOICES)  # Add campaign type
@@ -85,6 +93,9 @@ class Target(models.Model):
     target_spend = models.DecimalField(max_digits=12, decimal_places=2)
     target_impressions = models.IntegerField()
     target_clicks = models.IntegerField()
+
+    # Add channel field with a default of Google
+    channel = models.CharField(max_length=20, choices=CHANNEL_CHOICES, default=GOOGLE)
 
     # Calculated fields for CTR and CPC
     @property
@@ -108,9 +119,9 @@ class Target(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"Target for {self.product} ({self.campaign_type}) - {self.month.strftime('%B %Y')}"
+        return f"Target for {self.product} ({self.campaign_type}) - {self.month.strftime('%B %Y')} - {self.channel}"
 
     class Meta:
         """ Ensure that targets are unique per product, campaign type, and month """
-        unique_together = ('product', 'month', 'client', 'campaign_type')  # Ensure uniqueness for client-product-month-type combo
+        unique_together = ('product', 'month', 'client', 'campaign_type', 'channel')  # Ensure uniqueness for client-product-month-type combo, now including channel
         ordering = ['month', 'product', 'campaign_type']  # Default ordering
