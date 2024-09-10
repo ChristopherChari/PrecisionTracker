@@ -24,6 +24,7 @@
             }
 
             // Function to update the campaign list based on selected filters
+           // Function to update the campaign list based on selected filters
             function updateCampaignList() {
                 $.ajax({
                     url: "{% url 'home' %}",
@@ -33,6 +34,7 @@
                     }
                 });
             }
+
 
             // Trigger the product dropdown update when a client is selected
             $('#client').on('change', function () {
@@ -83,7 +85,41 @@
     </form>
 
     <div id="campaign-list">
-        {% include 'CampaignTracker/campaign_list.html' %}
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Cost</th>
+                    <th>Impressions</th>
+                    <th>Clicks</th>
+                    <th>CTR (%)</th>
+                    <th>CPC</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for campaign_type, data in campaigns_by_type.items %}
+                <tr>
+                    <td colspan="6"><strong>{{ campaign_type }}</strong></td>
+                </tr>
+                <tr>
+                    <td>Targets</td>
+                    <td>{{ data.target_spend }}</td>
+                    <td>{{ data.target_impressions }}</td>
+                    <td>{{ data.target_clicks }}</td>
+                    <td>{{ data.target_ctr }}</td>
+                    <td>{{ data.target_cpc }}</td>
+                </tr>
+                <tr>
+                    <td>Actuals</td>
+                    <td>{{ data.total_spend }}</td>
+                    <td>{{ data.total_impressions }}</td>
+                    <td>{{ data.total_clicks }}</td>
+                    <td>{{ data.total_ctr }}</td>
+                    <td>{{ data.total_cpc }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>        
     </div>
 </body>
 </html>
