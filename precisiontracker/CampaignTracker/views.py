@@ -42,24 +42,117 @@ def get_or_create_client_from_campaign_group(campaign_group):
     client, created = Client.objects.get_or_create(name=client_name)
     return client
 
+from django.shortcuts import get_object_or_404
+from datetime import datetime
+
 def enter_targets(request):
+    form = None
+    existing_target = None
+    overwrite_confirmed = request.POST.get('confirm_overwrite', 'false') == 'true'
+
     if request.method == 'POST':
-        form = TargetForm(request.POST)
+        client_id = request.POST.get('client')
+        product = request.POST.get('product')
+        campaign_type = request.POST.get('campaign_type')
+        channel = request.POST.get('channel')
+        month = request.POST.get('month')
+
+        # Convert month to the first day of the selected month
+        month = datetime.strptime(month, '%Y-%m').replace(day=1)
+
+        # Check if a target exists for the current selection
+        try:
+            existing_target = Target.objects.get(
+                client_id=client_id,
+                product=product,
+                campaign_type=campaign_type,
+                channel=channel,
+                month=month
+            )
+        except Target.DoesNotExist:
+            existing_target = None
+
+        form = TargetForm(request.POST, instance=existing_target)  # Bind form to existing instance
+
         if form.is_valid():
-            # Print the cleaned data before saving (including the cleaned month)
-            print(f"Cleaned form data: {form.cleaned_data}")
-            
-            form.save()
-            messages.success(request, 'Target saved successfully!')
-            return redirect('enter_target')  # Redirect to the same page after successful save
+            # Only save changes if form is valid
+            if existing_target:
+                if not overwrite_confirmed:
+                    messages.warning(request, 'A target already exists for this selection. Confirm to overwrite.')
+                    return render(request, 'CampaignTracker/enter_target.html', {
+                        'form': form,
+                        'existing_target': existing_target,
+                        'confirm_overwrite': True,  # Show confirmation message
+                    })
+                else:
+                    # Save updates to the existing target
+                    form.save()
+                    messages.success(request, 'Target updated successfully!')
+            else:
+                # Save a new target
+                form.save()
+                messages.success(request, 'Target created successfully!')
+
+            return redirect('enter_target')  # Redirect to avoid re-submission
         else:
-            # Debugging: print form errors to the terminal
-            print("Form errors:", form.errors)
             messages.error(request, 'There was an error with your submission. Please check the form.')
+
     else:
+        # For GET request, initialize the form
         form = TargetForm()
 
-    return render(request, 'CampaignTracker/enter_target.html', {'form': form})
+    # Fetch all clients
+    clients = Client.objects.all()
+
+    return render(request, 'CampaignTracker/enter_target.html', {
+        'form': form,
+        'existing_target': existing_target,
+        'clients': clients,
+        'confirm_overwrite': False,  # Reset overwrite confirmation
+    })
+
+
+def check_existing_target(request):
+    client_id = request.GET.get('client')
+    product = request.GET.get('product')
+    campaign_type = request.GET.get('campaign_type')
+    channel = request.GET.get('channel')
+    month = request.GET.get('month')
+
+    if client_id and product and campaign_type and channel and month:
+        # Parse the month into a date object
+        try:
+            month = datetime.strptime(month, '%Y-%m').replace(day=1)
+        except ValueError:
+            return JsonResponse({'error': 'Invalid date format'}, status=400)
+        
+        # Try to find an existing target
+        try:
+            target = Target.objects.get(
+                client_id=client_id,
+                product=product,
+                campaign_type=campaign_type,
+                channel=channel,
+                month=month
+            )
+
+            # Return target details in JSON format
+            target_data = {
+                'client': target.client.name,
+                'product': target.product,
+                'campaign_type': target.campaign_type,
+                'month': target.month.strftime('%B %Y'),
+                'target_spend': float(target.target_spend),
+                'target_impressions': target.target_impressions,
+                'target_clicks': target.target_clicks,
+                'channel': target.channel
+            }
+            return JsonResponse({'target': target_data})
+
+        except Target.DoesNotExist:
+            return JsonResponse({'target': None})
+
+    return JsonResponse({'error': 'Missing parameters'}, status=400)
 
 def get_products_for_client(request):
     client_id = request.GET.get('client_id')
@@ -73,9 +166,7 @@ def get_products_for_client(request):
     return JsonResponse({'products': products})
 
 
-from django.shortcuts import render
-from django.template.loader import render_to_string
-from django.http import JsonResponse
+
 
 def filter_campaigns(request):
     clients = Client.objects.all()

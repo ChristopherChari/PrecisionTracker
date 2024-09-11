@@ -5,6 +5,74 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Enter Campaign Targets</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            function checkExistingTarget() {
+                let client_id = $('#id_client').val();
+                let product = $('#id_product').val();
+                let campaign_type = $('#id_campaign_type').val();
+                let channel = $('#id_channel').val();
+                let month = $('#id_month').val();
+
+                // Ensure all fields are selected before making the AJAX request
+                if (client_id && product && campaign_type && channel && month) {
+                    $.ajax({
+                        url: "{% url 'check_existing_target' %}",
+                        data: {
+                            client: client_id,
+                            product: product,
+                            campaign_type: campaign_type,
+                            channel: channel,
+                            month: month
+                        },
+                        success: function(response) {
+                            if (response.target) {
+                                let target = response.target;
+                                let html = `
+                                    <h2>Existing Target</h2>
+                                    <table border="1">
+                                        <tr>
+                                            <th>Client</th>
+                                            <th>Product</th>
+                                            <th>Campaign Type</th>
+                                            <th>Month</th>
+                                            <th>Target Spend</th>
+                                            <th>Impressions</th>
+                                            <th>Clicks</th>
+                                            <th>Channel</th>
+                                        </tr>
+                                        <tr>
+                                            <td>${target.client}</td>
+                                            <td>${target.product}</td>
+                                            <td>${target.campaign_type}</td>
+                                            <td>${target.month}</td>
+                                            <td>£${target.target_spend.toFixed(2)}</td>
+                                            <td>${target.target_impressions}</td>
+                                            <td>${target.target_clicks}</td>
+                                            <td>${target.channel}</td>
+                                        </tr>
+                                    </table>
+                                `;
+                                $('#existing-target').html(html);  // Inject HTML into target div
+                            } else {
+                                $('#existing-target').html('<p>No existing target found.</p>');
+                            }
+                        },
+                        error: function() {
+                            $('#existing-target').html('<p>Error checking for existing target.</p>');
+                        }
+                    });
+                }
+            }
+
+            // Attach event listeners to trigger the AJAX call when the filters change
+            $('#id_client, #id_product, #id_campaign_type, #id_channel, #id_month').on('change', function() {
+                checkExistingTarget();
+            });
+        });
+    </script>
+
     <script>
         $(document).ready(function() {
             function updateProductDropdown(client_id) {
@@ -15,7 +83,15 @@
                         let productSelect = $('#id_product');
                         productSelect.empty();  // Clear previous options
                         productSelect.append('<option value="">-- Select Product --</option>');
+
+                        // Use Set to automatically avoid duplicates
+                        let uniqueProducts = new Set();
                         data.products.forEach(function(product) {
+                            uniqueProducts.add(product);
+                        });
+
+                        // Populate product dropdown with unique products
+                        uniqueProducts.forEach(function(product) {
                             productSelect.append('<option value="' + product + '">' + product + '</option>');
                         });
                     },
@@ -42,7 +118,6 @@
 
     {% include 'nav.html' %}
 
-
     <form method="post">
         {% csrf_token %}
         
@@ -67,23 +142,22 @@
         <label for="target_clicks">Target Clicks:</label>
         {{ form.target_clicks }}
         
-        <!-- Add Channel Field -->
         <label for="channel">Channel:</label>
         {{ form.channel }}
+    
+        <!-- Display confirmation message if overwriting is needed -->
+        {% if confirm_overwrite %}
+            <div class="alert alert-warning">
+                A target already exists for this combination. Do you want to overwrite it?
+                <input type="hidden" name="confirm_overwrite" value="true">
+            </div>
+        {% endif %}
         
         <button type="submit">Save</button>
     </form>
     
-    
-    {% if form.errors %}
-    <div class="form-errors">
-        <ul>
-            {% for field, errors in form.errors.items %}
-                <li>{{ field }}: {{ errors }}</li>
-            {% endfor %}
-        </ul>
-    </div>
-{% endif %}
+    <!-- Section to display the existing target if found -->
+    <div id="existing-target"></div>
 
 </body>
 </html>

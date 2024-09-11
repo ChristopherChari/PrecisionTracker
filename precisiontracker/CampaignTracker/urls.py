@@ -11,5 +11,6 @@ urlpatterns = [
     path('map-campaign-name/', name_mapping, name='name_mapping'),
     path('name-mapping/', name_mapping, name='name_mapping'),
     path('name-mapping/ajax/', name_mapping_ajax, name='name_mapping_ajax'),
+    path('check-existing-target/', views.check_existing_target, name='check_existing_target'),
     # Add other URL patterns as needed
 ]

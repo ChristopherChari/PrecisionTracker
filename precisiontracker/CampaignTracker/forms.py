@@ -36,26 +36,27 @@ class TargetForm(forms.ModelForm):
         fields = ['client', 'product', 'campaign_type', 'month', 'target_spend', 'target_impressions', 'target_clicks', 'channel']
 
         widgets = {
-             'month': forms.DateInput(attrs={'type': 'month'}, format='%Y-%m'),  # Ensure the format matches 'YYYY-MM'
+            'month': forms.DateInput(attrs={'type': 'month'}, format='%Y-%m'),  # Ensure the format matches 'YYYY-MM'
             'channel': forms.Select(choices=Target.CHANNEL_CHOICES),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Set input formats explicitly
         self.fields['month'].input_formats = ['%Y-%m']
+        # Set optional fields
+        self.fields['target_spend'].required = True
+        self.fields['target_impressions'].required = True
+        self.fields['target_clicks'].required = True
 
         # Dynamically update the product field based on the selected client
         if 'client' in self.data:
             try:
                 client_id = int(self.data.get('client'))
-                # Get products linked to the selected client
                 products = Target.objects.filter(client_id=client_id).values_list('product', flat=True).distinct()
                 self.fields['product'].widget = forms.Select(choices=[('', '-- Select Product --')] + [(p, p) for p in products])
             except (ValueError, TypeError):
                 self.fields['product'].widget = forms.Select(choices=[('', '-- Select Product --')])
         elif self.instance.pk:
-            # If editing an existing entry, show the products for the associated client
             client_id = self.instance.client_id
             products = Target.objects.filter(client_id=client_id).values_list('product', flat=True).distinct()
             self.fields['product'].widget = forms.Select(choices=[('', '-- Select Product --')] + [(p, p) for p in products])
