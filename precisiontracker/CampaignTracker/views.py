@@ -165,9 +165,6 @@ def get_products_for_client(request):
 
     return JsonResponse({'products': products})
 
-
-
-
 def filter_campaigns(request):
     clients = Client.objects.all()
     campaigns_by_type = {}
@@ -189,14 +186,12 @@ def filter_campaigns(request):
     if end_date:
         request.session['selected_end_date'] = end_date
 
-    # Check for client, product, start_date, end_date, and channel to filter campaigns
     if client_id and product and start_date and end_date:
         client = get_object_or_404(Client, id=client_id)
         start_date = parse_date(start_date)
         end_date = parse_date(end_date)
         total_days_selected = (end_date - start_date).days + 1
 
-        # Fetch campaigns based on the selected filters (including channel)
         campaigns = Campaign.objects.filter(
             client=client,
             product=product,
@@ -204,28 +199,25 @@ def filter_campaigns(request):
             end_date__lte=end_date,
         )
         
-        # If a channel is selected, filter by it
         if selected_channel:
             campaigns = campaigns.filter(channel=selected_channel)
 
         for campaign in campaigns:
-            campaign_type = f"{campaign.channel} {campaign.campaign_type}"  # Prefix campaign type with channel
+            campaign_type = f"{campaign.channel} {campaign.campaign_type}"
 
-            # Fetch the target for this campaign type and channel
             target = Target.objects.filter(
                 client=client,
                 product=product,
                 campaign_type=campaign.campaign_type,
                 month__year=start_date.year,
                 month__month=start_date.month,
-                channel=campaign.channel  # Ensure we're fetching the target for the right channel
+                channel=campaign.channel
             ).first()
 
             if target:
                 days_in_month = (target.month.replace(month=target.month.month % 12 + 1, day=1) - timedelta(days=1)).day
                 proportion_of_month = Decimal(total_days_selected) / Decimal(days_in_month)
 
-                # Calculate dynamic targets
                 target_spend = target.target_spend * proportion_of_month
                 target_impressions = target.target_impressions * proportion_of_month
                 target_clicks = target.target_clicks * proportion_of_month
@@ -248,6 +240,9 @@ def filter_campaigns(request):
                     'target_clicks': target_clicks,
                     'target_ctr': target_ctr,
                     'target_cpc': target_cpc,
+                    'spend_diff': 0,
+                    'impressions_diff': 0,
+                    'clicks_diff': 0,
                 }
 
             campaigns_by_type[campaign_type]['campaigns'].append(campaign)
@@ -255,19 +250,38 @@ def filter_campaigns(request):
             campaigns_by_type[campaign_type]['total_clicks'] += campaign.clicks
             campaigns_by_type[campaign_type]['total_spend'] += campaign.spend
 
+            if campaigns_by_type[campaign_type]['target_spend'] > 0:
+                campaigns_by_type[campaign_type]['spend_diff'] = (
+                    (campaigns_by_type[campaign_type]['total_spend'] - campaigns_by_type[campaign_type]['target_spend']) /
+                    campaigns_by_type[campaign_type]['target_spend']
+                ) * 100
+
+            if campaigns_by_type[campaign_type]['target_impressions'] > 0:
+                campaigns_by_type[campaign_type]['impressions_diff'] = (
+                    (campaigns_by_type[campaign_type]['total_impressions'] - campaigns_by_type[campaign_type]['target_impressions']) /
+                    campaigns_by_type[campaign_type]['target_impressions']
+                ) * 100
+
+            if campaigns_by_type[campaign_type]['target_clicks'] > 0:
+                campaigns_by_type[campaign_type]['clicks_diff'] = (
+                    (campaigns_by_type[campaign_type]['total_clicks'] - campaigns_by_type[campaign_type]['target_clicks']) /
+                    campaigns_by_type[campaign_type]['target_clicks']
+                ) * 100
+
         for campaign_type, data in campaigns_by_type.items():
             if data['total_clicks'] > 0:
                 data['total_ctr'] = (data['total_clicks'] / data['total_impressions']) * 100 if data['total_impressions'] > 0 else 0
                 data['total_cpc'] = data['total_spend'] / data['total_clicks'] if data['total_clicks'] > 0 else 0
 
-    # Handle AJAX request
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         rendered_campaigns = render_to_string('CampaignTracker/campaign_list.html', {
             'campaigns_by_type': campaigns_by_type,
         })
-        return JsonResponse({'html': rendered_campaigns})
+        rendered_kpis = render_to_string('CampaignTracker/kpi_cards.html', {
+            'campaigns_by_type': campaigns_by_type,
+        })
+        return JsonResponse({'html': rendered_campaigns, 'kpi_html': rendered_kpis})
 
-    # Handle full-page load
     return render(request, 'CampaignTracker/filter_campaigns.html', {
         'clients': clients,
         'campaigns_by_type': campaigns_by_type,

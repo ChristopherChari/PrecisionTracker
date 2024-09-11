@@ -1,0 +1,289 @@
+/* General Styles */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #FFE5CF; /* Background */
+    color: #33372C; /* Text color */
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+}
+
+/* Header Styles */
+header {
+    background-color: #557C56; /* Secondary color */
+    color: white;
+    padding: 20px 0;
+    text-align: center;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 2.5em;
+}
+
+/* Navigation Bar */
+nav {
+    text-align: center;
+    background-color: #FF885B; /* Primary color */
+    padding: 10px;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    margin: 0 15px;
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+nav a:hover {
+    color: #FFE5CF;
+}
+
+/* Filter Bar Styles */
+.filter-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #FFE5CF;
+    padding: 5px 10px;  /* Smaller padding for compactness */
+    margin: 15px auto;
+    border-radius: 5px;
+    max-width: 800px;  /* Ensure it doesn't take up too much width */
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Make filter inputs smaller */
+.filter-bar select,
+.filter-bar input {
+    padding: 5px 8px;
+    font-size: 0.9em;
+    border: 1px solid #557C56; /* Border matches secondary color */
+    border-radius: 3px;
+    margin-right: 10px;
+    width: auto;  /* Prevents full-width on smaller screens */
+}
+
+/* Button inside filter bar */
+.filter-bar button {
+    padding: 5px 12px;
+    font-size: 0.9em;
+    background-color: #FF885B;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.filter-bar button:hover {
+    background-color: #557C56;
+}
+
+/* Adjust table placement below the filter bar */
+#campaign-list {
+    margin-top: 15px;
+}
+
+/* Form Styles */
+form {
+    max-width: 800px;
+    margin: 30px auto;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: #33372C; /* Dark text */
+}
+
+input[type="text"],
+input[type="month"],
+select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #557C56; /* Border matches secondary color */
+    border-radius: 5px;
+    margin-bottom: 20px;
+    font-size: 1em;
+    color: #33372C;
+}
+
+input[type="submit"],
+button {
+    background-color: #FF885B; /* Primary color */
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1.2em;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+input[type="submit"]:hover,
+button:hover {
+    background-color: #557C56; /* Darken on hover */
+}
+
+/* Table Styles */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+}
+
+table th,
+table td {
+    padding: 12px 15px;
+    border: 1px solid #33372C;
+    text-align: left;
+}
+
+table th {
+    background-color: #557C56; /* Header background */
+    color: white;
+}
+
+table tr:nth-child(even) {
+    background-color: #FFE5CF;
+}
+
+table tr:hover {
+    background-color: #FF885B; /* Row hover */
+    color: white;
+}
+
+/* Existing Target Styles */
+#existing-target {
+    margin-top: 20px;
+    padding: 20px;
+    background-color: #557C56;
+    color: white;
+    border-radius: 8px;
+}
+
+#existing-target h2 {
+    font-size: 1.5em;
+    margin-bottom: 15px;
+}
+
+/* Footer Styles */
+footer {
+    background-color: #33372C;
+    color: white;
+    padding: 10px 0;
+    text-align: center;
+    font-size: 0.9em;
+}
+
+footer p {
+    margin: 0;
+}
+
+/* Form Errors */
+.form-errors ul {
+    list-style-type: none;
+    padding: 0;
+    color: red;
+}
+
+.form-errors li {
+    margin-bottom: 10px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    header h1 {
+        font-size: 2em;
+    }
+
+    nav a {
+        display: block;
+        margin: 10px 0;
+    }
+
+    form {
+        padding: 15px;
+    }
+
+    table th, table td {
+        padding: 8px;
+    }
+
+    .filter-bar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .filter-bar select,
+    .filter-bar input,
+    .filter-bar button {
+        margin-bottom: 10px;
+        width: 100%;
+    }
+}
+
+/* KPI Cards Container */
+.kpi-cards {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 20px;
+}
+
+/* Individual KPI Card */
+.kpi-card {
+    background-color: #FFFFFF; /* White background */
+    padding: 20px;
+    width: 18%;
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+/* KPI Card Header */
+.kpi-card h3 {
+    font-size: 1.5em;
+    margin-bottom: 10px;
+    color: #557C56; /* Heading color */
+}
+
+/* KPI Measurement */
+.kpi-card .measurement {
+    font-size: 2em;
+    color: #FF885B; /* Main KPI value color */
+    margin-bottom: 8px;
+}
+
+/* Percentage Difference */
+.kpi-card .percentage {
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+/* Positive/Negative Percentage Difference Colors */
+.kpi-card .positive {
+    color: #557C56; /* Green for positive difference */
+}
+
+.kpi-card .negative {
+    color: #FF885B; /* Red for negative difference */
+}
+
+/* Responsive Cards */
+@media (max-width: 768px) {
+    .kpi-cards {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .kpi-card {
+        width: 80%;
+        margin-bottom: 20px;
+    }
+}

@@ -1,0 +1,37 @@
+<div class="kpi-cards">
+    {% for campaign_type, data in campaigns_by_type.items %}
+        <div class="kpi-card">
+            <h3>{{ campaign_type }} - Cost</h3>
+            <p class="measurement">£{{ data.total_spend|floatformat:2 }}</p>
+            <p class="percentage">
+                {% if data.spend_diff > 0 %}
+                    <span class="positive">+{{ data.spend_diff|floatformat:2 }}%</span>
+                {% else %}
+                    <span class="negative">{{ data.spend_diff|floatformat:2 }}%</span>
+                {% endif %}
+            </p>
+        </div>
+        <div class="kpi-card">
+            <h3>{{ campaign_type }} - Impressions</h3>
+            <p class="measurement">{{ data.total_impressions }}</p>
+            <p class="percentage">
+                {% if data.impressions_diff > 0 %}
+                    <span class="positive">+{{ data.impressions_diff|floatformat:2 }}%</span>
+                {% else %}
+                    <span class="negative">{{ data.impressions_diff|floatformat:2 }}%</span>
+                {% endif %}
+            </p>
+        </div>
+        <div class="kpi-card">
+            <h3>{{ campaign_type }} - Clicks</h3>
+            <p class="measurement">{{ data.total_clicks }}</p>
+            <p class="percentage">
+                {% if data.clicks_diff > 0 %}
+                    <span class="positive">+{{ data.clicks_diff|floatformat:2 }}%</span>
+                {% else %}
+                    <span class="negative">{{ data.clicks_diff|floatformat:2 }}%</span>
+                {% endif %}
+            </p>
+        </div>
+    {% endfor %}
+</div>

@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Filter Campaigns</title>
+    <!-- Load the static tag library -->
+    {% load static %}
+
+    <!-- Link to the CSS file -->
+    <link rel="stylesheet" href="{% static 'CampaignTracker/css/style.css' %}">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         $(document).ready(function () {
@@ -58,6 +63,35 @@
             }
         });
     </script>
+   <script>
+    $(document).ready(function () {
+        function updateCampaignListAndKpis() {
+            $.ajax({
+                url: "{% url 'home' %}",
+                data: $('#filter-form').serialize(),
+                success: function (response) {
+                    console.log("Response data:", response);  // Debugging output
+                    
+                    // Update the campaign list
+                    $('#campaign-list').html(response.html);
+                    
+                    // Update the KPI cards
+                    $('#kpi-cards').html(response.kpi_html);
+                },
+                error: function () {
+                    alert('Error loading data.');
+                }
+            });
+        }
+
+        // Trigger the update when any filter changes
+        $('#filter-form select, #filter-form input').on('change', function () {
+            updateCampaignListAndKpis();
+        });
+    });
+
+</script>
+
 </head>
 <body>
     <h1>Filter Campaigns by Client, Product, Channel, and Date Range</h1>
@@ -130,5 +164,6 @@
             </tbody>
         </table>
     </div>
+    <div id="kpi-cards"></div>
 </body>
 </html>
