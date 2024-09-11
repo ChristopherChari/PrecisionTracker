@@ -165,6 +165,40 @@ def get_products_for_client(request):
 
     return JsonResponse({'products': products})
 
+from datetime import timedelta
+
+from datetime import timedelta, date
+
+def get_previous_period_data(client, product, channel, start_date, end_date, period='7days'):
+    # Get the previous period's date range
+    if period == '7days':
+        previous_start_date = start_date - timedelta(days=7)
+        previous_end_date = end_date - timedelta(days=7)
+    elif period == 'month':
+        previous_start_date = (start_date.replace(day=1) - timedelta(days=1)).replace(day=1)
+        previous_end_date = start_date - timedelta(days=1)
+
+    # Fetch campaigns for the previous period
+    previous_campaigns = Campaign.objects.filter(
+        client=client,
+        product=product,
+        start_date__gte=previous_start_date,
+        end_date__lte=previous_end_date,
+    )
+    
+    if channel:
+        previous_campaigns = previous_campaigns.filter(channel=channel)
+
+    # Aggregate previous period data
+    previous_data = {
+        'spend': sum(c.spend for c in previous_campaigns),
+        'impressions': sum(c.impressions for c in previous_campaigns),
+        'clicks': sum(c.clicks for c in previous_campaigns)
+    }
+
+    return previous_data
+
+
 def filter_campaigns(request):
     clients = Client.objects.all()
     campaigns_by_type = {}
@@ -173,6 +207,7 @@ def filter_campaigns(request):
     selected_channel = request.GET.get('channel', request.session.get('selected_channel'))
     start_date = request.GET.get('start_date', request.session.get('selected_start_date'))
     end_date = request.GET.get('end_date', request.session.get('selected_end_date'))
+    comparison_period = request.GET.get('comparison_period','month')  # Comparison period: 7 days or month
 
     # Store session data
     if client_id:
@@ -192,6 +227,14 @@ def filter_campaigns(request):
         end_date = parse_date(end_date)
         total_days_selected = (end_date - start_date).days + 1
 
+        # Calculate the previous period start and end dates
+        if comparison_period == '7days':
+            prev_start_date = start_date - timedelta(days=7)
+            prev_end_date = end_date - timedelta(days=7)
+        else:  # 'month' comparison
+            prev_start_date = (start_date - timedelta(days=30)).replace(day=1)
+            prev_end_date = prev_start_date + timedelta(days=30) - timedelta(seconds=1)
+
         campaigns = Campaign.objects.filter(
             client=client,
             product=product,
@@ -201,6 +244,17 @@ def filter_campaigns(request):
         
         if selected_channel:
             campaigns = campaigns.filter(channel=selected_channel)
+
+        # Fetch previous period campaigns for comparison
+        previous_campaigns = Campaign.objects.filter(
+            client=client,
+            product=product,
+            start_date__gte=prev_start_date,
+            end_date__lte=prev_end_date,
+        )
+        
+        if selected_channel:
+            previous_campaigns = previous_campaigns.filter(channel=selected_channel)
 
         for campaign in campaigns:
             campaign_type = f"{campaign.channel} {campaign.campaign_type}"
@@ -243,6 +297,9 @@ def filter_campaigns(request):
                     'spend_diff': 0,
                     'impressions_diff': 0,
                     'clicks_diff': 0,
+                    'previous_spend': 0,
+                    'previous_impressions': 0,
+                    'previous_clicks': 0,
                 }
 
             campaigns_by_type[campaign_type]['campaigns'].append(campaign)
@@ -250,25 +307,24 @@ def filter_campaigns(request):
             campaigns_by_type[campaign_type]['total_clicks'] += campaign.clicks
             campaigns_by_type[campaign_type]['total_spend'] += campaign.spend
 
-            if campaigns_by_type[campaign_type]['target_spend'] > 0:
-                campaigns_by_type[campaign_type]['spend_diff'] = (
-                    (campaigns_by_type[campaign_type]['total_spend'] - campaigns_by_type[campaign_type]['target_spend']) /
-                    campaigns_by_type[campaign_type]['target_spend']
-                ) * 100
-
-            if campaigns_by_type[campaign_type]['target_impressions'] > 0:
-                campaigns_by_type[campaign_type]['impressions_diff'] = (
-                    (campaigns_by_type[campaign_type]['total_impressions'] - campaigns_by_type[campaign_type]['target_impressions']) /
-                    campaigns_by_type[campaign_type]['target_impressions']
-                ) * 100
-
-            if campaigns_by_type[campaign_type]['target_clicks'] > 0:
-                campaigns_by_type[campaign_type]['clicks_diff'] = (
-                    (campaigns_by_type[campaign_type]['total_clicks'] - campaigns_by_type[campaign_type]['target_clicks']) /
-                    campaigns_by_type[campaign_type]['target_clicks']
-                ) * 100
-
+        # Now calculate the previous actuals and compare them
         for campaign_type, data in campaigns_by_type.items():
+            # Get the previous period campaigns for this campaign_type
+            prev_campaigns = previous_campaigns.filter(campaign_type=campaign_type.split()[1])  # Removing channel prefix
+            for prev_campaign in prev_campaigns:
+                data['previous_spend'] += prev_campaign.spend
+                data['previous_impressions'] += prev_campaign.impressions
+                data['previous_clicks'] += prev_campaign.clicks
+
+            # Calculate percentage differences with previous actuals
+            if data['previous_spend'] > 0:
+                data['spend_diff'] = ((data['total_spend'] - data['previous_spend']) / data['previous_spend']) * 100
+            if data['previous_impressions'] > 0:
+                data['impressions_diff'] = ((data['total_impressions'] - data['previous_impressions']) / data['previous_impressions']) * 100
+            if data['previous_clicks'] > 0:
+                data['clicks_diff'] = ((data['total_clicks'] - data['previous_clicks']) / data['previous_clicks']) * 100
+
+            # Calculate CTR and CPC for the current period
             if data['total_clicks'] > 0:
                 data['total_ctr'] = (data['total_clicks'] / data['total_impressions']) * 100 if data['total_impressions'] > 0 else 0
                 data['total_cpc'] = data['total_spend'] / data['total_clicks'] if data['total_clicks'] > 0 else 0
@@ -279,6 +335,7 @@ def filter_campaigns(request):
         })
         rendered_kpis = render_to_string('CampaignTracker/kpi_cards.html', {
             'campaigns_by_type': campaigns_by_type,
+            'comparison_period': comparison_period,  # Pass comparison period
         })
         return JsonResponse({'html': rendered_campaigns, 'kpi_html': rendered_kpis})
 
@@ -290,6 +347,7 @@ def filter_campaigns(request):
         'selected_channel': selected_channel,
         'selected_start_date': start_date,
         'selected_end_date': end_date,
+        'comparison_period': comparison_period,
     })
 
 

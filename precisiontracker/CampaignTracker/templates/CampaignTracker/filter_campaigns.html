@@ -65,30 +65,27 @@
     </script>
    <script>
     $(document).ready(function () {
-        function updateCampaignListAndKpis() {
-            $.ajax({
-                url: "{% url 'home' %}",
-                data: $('#filter-form').serialize(),
-                success: function (response) {
-                    console.log("Response data:", response);  // Debugging output
-                    
-                    // Update the campaign list
-                    $('#campaign-list').html(response.html);
-                    
-                    // Update the KPI cards
-                    $('#kpi-cards').html(response.kpi_html);
-                },
-                error: function () {
-                    alert('Error loading data.');
-                }
-            });
-        }
-
-        // Trigger the update when any filter changes
-        $('#filter-form select, #filter-form input').on('change', function () {
-            updateCampaignListAndKpis();
+    // Function to update the KPI cards when filters change
+    function updateKpiCards() {
+        $.ajax({
+            url: "{% url 'home' %}",  // Adjust URL if necessary
+            data: $('#filter-form').serialize(),  // Serialize form data, including comparison_period
+            success: function (response) {
+                // Clear existing cards and append new ones
+                $('#kpi-cards').html(response.kpi_html);
+            },
+            error: function () {
+                alert('Error loading data.');
+            }
         });
+    }
+
+    // Trigger the KPI card update when the filters (including comparison_period) change
+    $('#filter-form select, #filter-form input').on('change', function () {
+        updateKpiCards();
     });
+});
+
 
 </script>
 
@@ -124,6 +121,12 @@
 
         <label for="end_date">End Date:</label>
         <input type="date" name="end_date" id="end_date" value="{{ selected_end_date }}">
+
+        <label for="comparison_period">Comparison Period:</label>
+        <select name="comparison_period" id="comparison_period">
+            <option value="7days" {% if comparison_period == '7days' %}selected{% endif %}>Previous 7 Days</option>
+            <option value="month" {% if comparison_period == 'month' %}selected{% endif %}>Previous Month</option>
+        </select>
     </form>
 
     <div id="campaign-list">
