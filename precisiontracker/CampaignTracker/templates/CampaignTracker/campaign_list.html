@@ -1,16 +1,96 @@
 <style>
-    .green {
-        background-color: #90ee90; /* Light green */
+    /* General font styling */
+    body, table {
+        font-family: 'Roboto', sans-serif;
     }
+
+    /* Green and Red for highlighting differences */
+    .green {
+        background-color: #228B22; /* Deeper green */
+        color: white;
+    }
+
     .red {
-        background-color: #ffcccb; /* Light red */
+        background-color: #B22222; /* Deeper red */
+        color: white;
+    }
+
+    /* Table Styling */
+    table {
+        width: 60%;  /* Further reduce the table width */
+        margin: 20px auto;  /* Center the table */
+        border-collapse: collapse;
+        font-size: 1.2em; /* Slightly smaller font size */
+        background-color: #fff;
+        border-radius: 8px;
+        overflow: hidden;
+        text-align: right;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    th, td {
+        padding: 4px 8px;  /* Reduce padding further for compactness */
+        border: 1px solid #33372C;
+        text-align: center;  /* Center align all text */
+        font-weight: 500;  /* Semi-bold text for clarity */
+        color: #33372C;
+        vertical-align: middle; /* Ensure vertical alignment */
+    }
+
+    th {
+        background-color: #557C56; /* Darker green background for header */
+        color: white;
+        text-transform: uppercase;
+        font-size: 0.85em;  /* Slightly smaller font size */
+    }
+
+    tr:nth-child(even) {
+        background-color: #FFE5CF; /* Light alternate row color */
+    }
+
+    tr:hover {
+        background-color: #FF885B; /* Row hover effect */
+        color: white;
+    }
+
+    /* Strong compact styling */
+    td {
+        font-size: 1.0em; /* Standard readable size */
+        padding: 4px; /* Minimal padding */
+    }
+
+    /* Headings for campaign type */
+    td[colspan="6"] {
+        background-color: #557C56;
+        color: white;
+        font-weight: bold;
+        font-size: 1.1em;
+        text-align: center;
+    }
+
+    /* Hover effect */
+    th, td {
+        transition: background-color 0.3s ease;
+    }
+
+    /* Responsive for smaller screens */
+    @media (max-width: 768px) {
+        table {
+            width: 100%;
+        }
+
+        td {
+            font-size: 0.9em;  /* Slightly smaller font on mobile */
+        }
     }
 </style>
+
+{% load humanize %}
 
 <table border="1">
     <thead>
         <tr>
-            <th>Type</th>
+            <th>Overview</th>
             <th>Cost</th>
             <th>Impressions</th>
             <th>Clicks</th>
@@ -25,33 +105,28 @@
         </tr>
         <tr>
             <td>Targets</td>
-            <td>£{{ data.target_spend|floatformat:2 }}</td>
-            <td>{{ data.target_impressions|floatformat:0 }}</td> <!-- Force no decimal points -->
-            <td>{{ data.target_clicks|floatformat:0 }}</td>      <!-- Force no decimal points -->
-            <td>{{ data.target_ctr|floatformat:2 }}%</td>
-            <td>£{{ data.target_cpc|floatformat:2 }}</td>
+            <td>£{{ data.target_spend|floatformat:2|intcomma }}</td>
+            <td>{{ data.target_impressions|floatformat:0|intcomma }}</td>
+            <td>{{ data.target_clicks|floatformat:0|intcomma }}</td>
+            <td>{{ data.target_ctr|floatformat:2|intcomma }}%</td>
+            <td>£{{ data.target_cpc|floatformat:2|intcomma }}</td>
         </tr>
         <tr>
             <td>Actuals</td>
-            <!-- Cost: Red if actual cost > target cost, otherwise green -->
             <td class="{% if data.total_spend > data.target_spend %}red{% else %}green{% endif %}">
-                £{{ data.total_spend|floatformat:2 }}
+                £{{ data.total_spend|floatformat:2|intcomma }}
             </td>
-            <!-- Impressions: Red if actual impressions < target impressions, otherwise green -->
             <td class="{% if data.total_impressions < data.target_impressions %}red{% else %}green{% endif %}">
-                {{ data.total_impressions|floatformat:0 }}
+                {{ data.total_impressions|floatformat:0|intcomma }}
             </td>
-            <!-- Clicks: Red if actual clicks < target clicks, otherwise green -->
             <td class="{% if data.total_clicks < data.target_clicks %}red{% else %}green{% endif %}">
-                {{ data.total_clicks|floatformat:0 }}
+                {{ data.total_clicks|floatformat:0|intcomma }}
             </td>
-            <!-- CTR: Red if actual CTR < target CTR, otherwise green -->
             <td class="{% if data.total_ctr < data.target_ctr %}red{% else %}green{% endif %}">
-                {{ data.total_ctr|floatformat:2 }}%
+                {{ data.total_ctr|floatformat:2|intcomma }}%
             </td>
-            <!-- CPC: Red if actual CPC > target CPC, otherwise green -->
             <td class="{% if data.total_cpc > data.target_cpc %}red{% else %}green{% endif %}">
-                £{{ data.total_cpc|floatformat:2 }}
+                £{{ data.total_cpc|floatformat:2|intcomma }}
             </td>
         </tr>
         {% endfor %}

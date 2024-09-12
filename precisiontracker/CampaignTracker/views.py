@@ -30,6 +30,7 @@ from datetime import datetime
 CAMPAIGN_GROUP_TO_CLIENT = {
     "Haliborange": "Haliborange - PCM",
     "BIOGLAN": "Bioglan",
+    "Superfoods": "Bioglan Superfoods",
     "PROMENSIL" : "Promensil",
     "Skin Doctors" : "Skin Doctors - PCM"
 }
@@ -208,6 +209,7 @@ def filter_campaigns(request):
     start_date = request.GET.get('start_date', request.session.get('selected_start_date'))
     end_date = request.GET.get('end_date', request.session.get('selected_end_date'))
     comparison_period = request.GET.get('comparison_period','month')  # Comparison period: 7 days or month
+    
 
     # Store session data
     if client_id:
@@ -220,6 +222,15 @@ def filter_campaigns(request):
         request.session['selected_start_date'] = start_date
     if end_date:
         request.session['selected_end_date'] = end_date
+
+    # If the client_id is invalid or the client was deleted, reset the session
+    if client_id:
+        try:
+            client = Client.objects.get(id=client_id)
+        except Client.DoesNotExist:
+            # If the client was deleted, clear the session and return to avoid error
+            del request.session['selected_client']
+            client_id = None  # Reset client_id to avoid further issues
 
     if client_id and product and start_date and end_date:
         client = get_object_or_404(Client, id=client_id)
@@ -319,10 +330,13 @@ def filter_campaigns(request):
             # Calculate percentage differences with previous actuals
             if data['previous_spend'] > 0:
                 data['spend_diff'] = ((data['total_spend'] - data['previous_spend']) / data['previous_spend']) * 100
+                data['spend_diffnum'] = ((data['total_spend'] - data['previous_spend']))
             if data['previous_impressions'] > 0:
                 data['impressions_diff'] = ((data['total_impressions'] - data['previous_impressions']) / data['previous_impressions']) * 100
+                data['impressions_diffnum'] = ((data['total_impressions'] - data['previous_impressions']))
             if data['previous_clicks'] > 0:
                 data['clicks_diff'] = ((data['total_clicks'] - data['previous_clicks']) / data['previous_clicks']) * 100
+                data['clicks_diffnum'] = ((data['total_clicks'] - data['previous_clicks']))
 
             # Calculate CTR and CPC for the current period
             if data['total_clicks'] > 0:
@@ -407,6 +421,12 @@ def upload_campaign_report(request):
     client_id = request.POST.get('client')
     selected_channel = request.POST.get('channel')
 
+    # Fetch existing campaign name to product mappings
+    existing_mappings = Campaign.objects.values('name', 'product').distinct()
+
+    # Create a dictionary for quick lookup of campaign-to-product mappings
+    campaign_name_to_product = {mapping['name']: mapping['product'] for mapping in existing_mappings if mapping['product']}
+
     # Handle CSV file upload
     if request.method == 'POST' and request.FILES.get('campaign_file'):
         campaign_file = request.FILES['campaign_file']
@@ -430,7 +450,10 @@ def upload_campaign_report(request):
                         campaign_date = datetime.strptime(row['Day'], '%d/%m/%Y').date()
 
                         # Retrieve client from the Campaign Group column
-                        client = get_or_create_client_from_campaign_group(row['Campaign Group'])
+                        client = get_or_create_client_from_campaign_group(row['Account name'])
+
+                        # Automatically map the product if it already exists for the campaign name
+                        product_name = campaign_name_to_product.get(row['Campaign'], '')
 
                         # Process campaign data
                         campaign, created = Campaign.objects.get_or_create(
@@ -445,6 +468,7 @@ def upload_campaign_report(request):
                                 'impressions': impressions,
                                 'clicks': clicks,
                                 'channel': selected_channel,
+                                'product': product_name,  # Automatically map product if it exists
                             }
                         )
                         combined_data.append(campaign)
@@ -466,6 +490,9 @@ def upload_campaign_report(request):
                         # Retrieve client from the Campaign Group column
                         client = get_or_create_client_from_campaign_group(row['Campaign Group'])
 
+                        # Automatically map the product if it already exists for the campaign name
+                        product_name = campaign_name_to_product.get(row['Campaign'], '')
+
                         # Process campaign data
                         campaign, created = Campaign.objects.get_or_create(
                             name=row['Campaign'],
@@ -479,6 +506,7 @@ def upload_campaign_report(request):
                                 'impressions': impressions,
                                 'clicks': clicks,
                                 'channel': selected_channel,
+                                'product': product_name,  # Automatically map product if it exists
                             }
                         )
                         combined_data.append(campaign)
@@ -487,7 +515,7 @@ def upload_campaign_report(request):
                         messages.error(request, f"Error processing row: {row['Campaign']} - {str(e)}")
                         continue
 
-        # Remove duplicates from combined_data
+        # Remove duplicates from combined_data by campaign name
         unique_campaign_names = {c.name: c for c in combined_data}.values()
         combined_data = list(unique_campaign_names)
 

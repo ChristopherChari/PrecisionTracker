@@ -54,15 +54,17 @@
                     <th>Product Name</th>
                 </tr>
 
-                {% for campaign_data in combined_data %}
+            {% for campaign in combined_data %}
                 <tr>
-                    <td>{{ campaign_data.name }}</td>
+                    <td>{{ campaign.name }}</td>
+                    <td>{{ campaign.product }}</td>
                     <td>
-                        <input type="text" name="product_{{ forloop.counter0 }}" value="{{ campaign_data.product }}">
-                        <input type="hidden" name="csv_name_{{ forloop.counter0 }}" value="{{ campaign_data.name }}">
+                        <input type="text" name="product_{{ forloop.counter }}" value="{{ campaign.product }}">
+                        <input type="hidden" name="csv_name_{{ forloop.counter }}" value="{{ campaign.name }}">
                     </td>
                 </tr>
-                {% endfor %}
+            {% endfor %}
+
             </table>
             <button type="submit">Save Mappings</button>
         </form>

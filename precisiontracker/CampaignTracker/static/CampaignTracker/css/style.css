@@ -1,8 +1,8 @@
 /* General Styles */
 body {
     font-family: 'Arial', sans-serif;
-    background-color: #FFE5CF; /* Background */
-    color: #33372C; /* Text color */
+    background-color: #FFE5CF;
+    color: #33372C;
     margin: 0;
     padding: 0;
     line-height: 1.6;
@@ -10,7 +10,7 @@ body {
 
 /* Header Styles */
 header {
-    background-color: #557C56; /* Secondary color */
+    background-color: #557C56;
     color: white;
     padding: 20px 0;
     text-align: center;
@@ -24,7 +24,7 @@ header h1 {
 /* Navigation Bar */
 nav {
     text-align: center;
-    background-color: #FF885B; /* Primary color */
+    background-color: #FF885B;
     padding: 10px;
 }
 
@@ -40,114 +40,64 @@ nav a:hover {
     color: #FFE5CF;
 }
 
-/* Filter Bar Styles */
-.filter-bar {
+/* Main Content: Align Filter and Table */
+.main-content {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: 20px;
+    max-width: 1200px;
+    margin: 20px auto;
+    padding-top: 30px;
+}
+
+/* Filter Form Styling */
+.filter-bar {
     background-color: #FFE5CF;
-    padding: 5px 10px;  /* Smaller padding for compactness */
-    margin: 15px auto;
-    border-radius: 5px;
-    max-width: 800px;  /* Ensure it doesn't take up too much width */
-    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-/* Make filter inputs smaller */
-.filter-bar select,
-.filter-bar input {
-    padding: 5px 8px;
-    font-size: 0.9em;
-    border: 1px solid #557C56; /* Border matches secondary color */
-    border-radius: 3px;
-    margin-right: 10px;
-    width: auto;  /* Prevents full-width on smaller screens */
-}
-
-/* Button inside filter bar */
-.filter-bar button {
-    padding: 5px 12px;
-    font-size: 0.9em;
-    background-color: #FF885B;
-    color: white;
-    border: none;
-    border-radius: 3px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.filter-bar button:hover {
-    background-color: #557C56;
-}
-
-/* Adjust table placement below the filter bar */
-#campaign-list {
-    margin-top: 15px;
-}
-
-/* Form Styles */
-form {
-    max-width: 800px;
-    margin: 30px auto;
-    background: white;
-    padding: 20px;
+    padding: 15px;
     border-radius: 10px;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    max-width: 250px;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
 }
 
-label {
-    display: block;
-    font-weight: bold;
-    margin-bottom: 8px;
-    color: #33372C; /* Dark text */
-}
-
-input[type="text"],
-input[type="month"],
-select {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #557C56; /* Border matches secondary color */
-    border-radius: 5px;
-    margin-bottom: 20px;
+/* Label and Input Styling */
+.filter-bar label {
     font-size: 1em;
+    margin-bottom: 8px;
     color: #33372C;
 }
 
-input[type="submit"],
-button {
-    background-color: #FF885B; /* Primary color */
-    color: white;
-    padding: 12px 20px;
-    border: none;
+.filter-bar select,
+.filter-bar input {
+    padding: 8px;
+    font-size: 0.9em;
+    border: 1px solid #557C56;
     border-radius: 5px;
-    font-size: 1.2em;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+    margin-bottom: 15px;
+    width: 100%;
 }
 
-input[type="submit"]:hover,
-button:hover {
-    background-color: #557C56; /* Darken on hover */
-}
-
-/* Table Styles */
+/* Table Styling */
 table {
     width: 100%;
     border-collapse: collapse;
     margin: 20px 0;
+    font-size: 1em;
 }
 
 table th,
 table td {
-    padding: 12px 15px;
+    padding: 8px 12px;
     border: 1px solid #33372C;
-    text-align: left;
+    text-align: center;
 }
 
 table th {
-    background-color: #557C56; /* Header background */
+    background-color: #557C56;
     color: white;
+    font-size: 1.1em;
 }
 
 table tr:nth-child(even) {
@@ -155,135 +105,62 @@ table tr:nth-child(even) {
 }
 
 table tr:hover {
-    background-color: #FF885B; /* Row hover */
+    background-color: #FF885B;
     color: white;
 }
 
-/* Existing Target Styles */
-#existing-target {
-    margin-top: 20px;
-    padding: 20px;
-    background-color: #557C56;
-    color: white;
-    border-radius: 8px;
-}
-
-#existing-target h2 {
-    font-size: 1.5em;
-    margin-bottom: 15px;
-}
-
-/* Footer Styles */
-footer {
-    background-color: #33372C;
-    color: white;
-    padding: 10px 0;
-    text-align: center;
-    font-size: 0.9em;
-}
-
-footer p {
-    margin: 0;
-}
-
-/* Form Errors */
-.form-errors ul {
-    list-style-type: none;
-    padding: 0;
-    color: red;
-}
-
-.form-errors li {
-    margin-bottom: 10px;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-    header h1 {
-        font-size: 2em;
-    }
-
-    nav a {
-        display: block;
-        margin: 10px 0;
-    }
-
-    form {
-        padding: 15px;
-    }
-
-    table th, table td {
-        padding: 8px;
-    }
-
-    .filter-bar {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .filter-bar select,
-    .filter-bar input,
-    .filter-bar button {
-        margin-bottom: 10px;
-        width: 100%;
-    }
-}
-
-/* KPI Cards Container */
+/* KPI Cards Grid */
 .kpi-cards {
-    display: flex;
-    justify-content: space-around;
     margin-top: 20px;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr); /* 5 columns for each KPI (cost, impressions, clicks, CTR, CPC) */
+    gap: 20px; /* Space between cards */
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
 /* Individual KPI Card */
 .kpi-card {
-    background-color: #FFFFFF; /* White background */
-    padding: 20px;
-    width: 18%;
+    background-color: #FFFFFF;
+    padding: 15px;
     border-radius: 8px;
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
     text-align: center;
+    margin: 10px 0;
 }
 
 /* KPI Card Header */
 .kpi-card h3 {
-    font-size: 1.5em;
-    margin-bottom: 10px;
-    color: #557C56; /* Heading color */
+    font-size: 1.1em;
+    margin-bottom: 5px;
+    color: #557C56;
 }
 
 /* KPI Measurement */
 .kpi-card .measurement {
-    font-size: 2em;
-    color: #FF885B; /* Main KPI value color */
-    margin-bottom: 8px;
+    font-size: 1.5em;
+    color: #FF885B;
+    margin-bottom: 5px;
 }
 
 /* Percentage Difference */
 .kpi-card .percentage {
-    font-size: 1.2em;
+    font-size: 1.1em;
     font-weight: bold;
 }
 
 /* Positive/Negative Percentage Difference Colors */
 .kpi-card .positive {
-    color: #557C56; /* Green for positive difference */
+    color: #4CAF50; /* Deeper green for positive difference */
 }
 
 .kpi-card .negative {
-    color: #FF885B; /* Red for negative difference */
+    color: #E53935; /* Deeper red for negative difference */
 }
 
 /* Responsive Cards */
 @media (max-width: 768px) {
     .kpi-cards {
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .kpi-card {
-        width: 80%;
-        margin-bottom: 20px;
+        grid-template-columns: 1fr; /* Stack cards vertically on small screens */
     }
 }

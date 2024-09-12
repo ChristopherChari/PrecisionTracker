@@ -6,11 +6,77 @@
     <title>Enter Campaign Targets</title>
     <!-- Load the static tag library -->
     {% load static %}
+    {% load humanize %}
 
     <!-- Link to the CSS file -->
     <link rel="stylesheet" href="{% static 'CampaignTracker/css/style.css' %}">
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <style>
+        /* General Layout */
+        .main-content {
+            display: flex;
+            justify-content: flex-start;
+            align-items: flex-start;
+            gap: 20px; /* Space between filter and table */
+            max-width: 1200px;
+            margin: 20px auto;
+        }
+
+        .filter-bar {
+            background-color: #FFE5CF;
+            padding: 15px;
+            border-radius: 5px;
+            width: 300px; /* Compact width */
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Table styling */
+        table {
+            width: 100%; /* Take full width available */
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table th,
+        table td {
+            padding: 10px 12px; /* Increased padding for better readability */
+            border: 1px solid #33372C;
+            text-align: center;
+            font-size: 0.9em;
+        }
+
+        table th {
+            background-color: #557C56;
+            color: white;
+        }
+
+        table tr:nth-child(even) {
+            background-color: #FFE5CF;
+        }
+
+        table tr:hover {
+            background-color: #FF885B;
+            color: white;
+        }
+
+        /* Responsive Layout */
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .filter-bar {
+                width: 100%; /* Full width on small screens */
+            }
+
+            table {
+                width: 100%;
+            }
+        }
+    </style>
 
     <script>
         $(document).ready(function() {
@@ -37,27 +103,31 @@
                                 let target = response.target;
                                 let html = `
                                     <h2>Existing Target</h2>
-                                    <table border="1">
-                                        <tr>
-                                            <th>Client</th>
-                                            <th>Product</th>
-                                            <th>Campaign Type</th>
-                                            <th>Month</th>
-                                            <th>Target Spend</th>
-                                            <th>Impressions</th>
-                                            <th>Clicks</th>
-                                            <th>Channel</th>
-                                        </tr>
-                                        <tr>
-                                            <td>${target.client}</td>
-                                            <td>${target.product}</td>
-                                            <td>${target.campaign_type}</td>
-                                            <td>${target.month}</td>
-                                            <td>£${target.target_spend.toFixed(2)}</td>
-                                            <td>${target.target_impressions}</td>
-                                            <td>${target.target_clicks}</td>
-                                            <td>${target.channel}</td>
-                                        </tr>
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Client</th>
+                                                <th>Product</th>
+                                                <th>Campaign Type</th>
+                                                <th>Month</th>
+                                                <th>Target Spend</th>
+                                                <th>Impressions</th>
+                                                <th>Clicks</th>
+                                                <th>Channel</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>${target.client}</td>
+                                                <td>${target.product}</td>
+                                                <td>${target.campaign_type}</td>
+                                                <td>${target.month}</td>
+                                                <td>£${target.target_spend.toFixed(2)}</td>
+                                                <td>${target.target_impressions.toLocaleString()}</td>
+                                                <td>${target.target_clicks.toLocaleString()}</td>
+                                                <td>${target.channel}</td>
+                                            </tr>
+                                        </tbody>
                                     </table>
                                 `;
                                 $('#existing-target').html(html);  // Inject HTML into target div
@@ -124,46 +194,50 @@
 
     {% include 'nav.html' %}
 
-    <form method="post">
-        {% csrf_token %}
-        
-        <label for="client">Client:</label>
-        {{ form.client }}
-        
-        <label for="product">Product:</label>
-        {{ form.product }}
-        
-        <label for="campaign_type">Campaign Type:</label>
-        {{ form.campaign_type }}
-        
-        <label for="month">Month:</label>
-        {{ form.month }}
-        
-        <label for="target_spend">Target Spend:</label>
-        {{ form.target_spend }}
-        
-        <label for="target_impressions">Target Impressions:</label>
-        {{ form.target_impressions }}
-        
-        <label for="target_clicks">Target Clicks:</label>
-        {{ form.target_clicks }}
-        
-        <label for="channel">Channel:</label>
-        {{ form.channel }}
-    
-        <!-- Display confirmation message if overwriting is needed -->
-        {% if confirm_overwrite %}
-            <div class="alert alert-warning">
-                A target already exists for this combination. Do you want to overwrite it?
-                <input type="hidden" name="confirm_overwrite" value="true">
-            </div>
-        {% endif %}
-        
-        <button type="submit">Save</button>
-    </form>
-    
-    <!-- Section to display the existing target if found -->
-    <div id="existing-target"></div>
+    <div class="main-content">
+        <div class="filter-bar">
+            <form method="post">
+                {% csrf_token %}
+                
+                <label for="client">Client:</label>
+                {{ form.client }}
+                
+                <label for="product">Product:</label>
+                {{ form.product }}
+                
+                <label for="campaign_type">Campaign Type:</label>
+                {{ form.campaign_type }}
+                
+                <label for="month">Month:</label>
+                {{ form.month }}
+                
+                <label for="target_spend">Target Spend:</label>
+                {{ form.target_spend }}
+                
+                <label for="target_impressions">Target Impressions:</label>
+                {{ form.target_impressions }}
+                
+                <label for="target_clicks">Target Clicks:</label>
+                {{ form.target_clicks }}
+                
+                <label for="channel">Channel:</label>
+                {{ form.channel }}
+            
+                <!-- Display confirmation message if overwriting is needed -->
+                {% if confirm_overwrite %}
+                    <div class="alert alert-warning">
+                        A target already exists for this combination. Do you want to overwrite it?
+                        <input type="hidden" name="confirm_overwrite" value="true">
+                    </div>
+                {% endif %}
+                
+                <button type="submit">Save</button>
+            </form>
+        </div>
+
+        <!-- Section to display the existing target if found -->
+        <div id="existing-target"></div>
+    </div>
 
 </body>
 </html>
