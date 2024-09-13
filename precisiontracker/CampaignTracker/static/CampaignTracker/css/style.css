@@ -1,6 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+
+/* General Styles */
 /* General Styles */
 body {
-    font-family: 'Arial', sans-serif;
+    font-family: 'Roboto', sans-serif;
     background-color: #FFE5CF;
     color: #33372C;
     margin: 0;
@@ -40,13 +44,12 @@ nav a:hover {
     color: #FFE5CF;
 }
 
-/* Main Content: Align Filter and Table */
+/* Main Content: Align Filter, Table, and KPI Cards */
 .main-content {
     display: flex;
-    justify-content: flex-start;
-    align-items: flex-start;
-    gap: 20px;
-    max-width: 1200px;
+    justify-content: space-between;
+    gap: 30px;
+    max-width: 1300px;
     margin: 20px auto;
     padding-top: 30px;
 }
@@ -56,8 +59,8 @@ nav a:hover {
     background-color: #FFE5CF;
     padding: 15px;
     border-radius: 10px;
-    max-width: 250px;
     box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+    max-width: 250px;
     display: flex;
     flex-direction: column;
 }
@@ -80,17 +83,24 @@ nav a:hover {
 }
 
 /* Table Styling */
+.table-container {
+    flex: 2;
+}
+
 table {
     width: 100%;
     border-collapse: collapse;
     margin: 20px 0;
     font-size: 1em;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    overflow: hidden;
 }
 
 table th,
 table td {
-    padding: 8px 12px;
-    border: 1px solid #33372C;
+    padding: 15px;
+    border-bottom: 1px solid #ddd;
     text-align: center;
 }
 
@@ -98,10 +108,11 @@ table th {
     background-color: #557C56;
     color: white;
     font-size: 1.1em;
+    text-transform: uppercase;
 }
 
 table tr:nth-child(even) {
-    background-color: #FFE5CF;
+    background-color: #f9f9f9;
 }
 
 table tr:hover {
@@ -111,54 +122,89 @@ table tr:hover {
 
 /* KPI Cards Grid */
 .kpi-cards {
-    margin-top: 20px;
     display: grid;
-    grid-template-columns: repeat(5, 1fr); /* 5 columns for each KPI (cost, impressions, clicks, CTR, CPC) */
-    gap: 20px; /* Space between cards */
-    max-width: 1200px;
-    margin: 0 auto;
+    grid-template-columns: repeat(3, 1fr); /* 3 cards per row */
+    gap: 15px; /* Smaller gap for more compact design */
+    padding: 20px;
+    width: 100%;
+}
+
+/* KPI Cards Grid */
+.kpi-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* 3 cards per row */
+    gap: 15px;
+    padding: 20px;
+    width: 100%;
 }
 
 /* Individual KPI Card */
 .kpi-card {
-    background-color: #FFFFFF;
-    padding: 15px;
-    border-radius: 8px;
+    background-color: white;
+    width: 150px; /* Square shape */
+    height: 150px; /* Square shape */
+    border-radius: 10px;
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
     text-align: center;
-    margin: 10px 0;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    font-weight: 400;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.kpi-card:hover {
+    box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.15);
+    transform: translateY(-5px);
 }
 
 /* KPI Card Header */
 .kpi-card h3 {
-    font-size: 1.1em;
-    margin-bottom: 5px;
+    font-size: 0.8em; /* Smaller header font */
+    margin-bottom: 6px;
     color: #557C56;
+    font-weight: 500;
 }
 
 /* KPI Measurement */
 .kpi-card .measurement {
-    font-size: 1.5em;
+    font-size: 1.1em; /* Smaller font for numbers */
     color: #FF885B;
     margin-bottom: 5px;
+    font-weight: 500;
 }
 
 /* Percentage Difference */
 .kpi-card .percentage {
-    font-size: 1.1em;
+    font-size: 0.9em; /* Reduced font size */
     font-weight: bold;
+    margin-top: 3px;
 }
 
 /* Positive/Negative Percentage Difference Colors */
 .kpi-card .positive {
-    color: #4CAF50; /* Deeper green for positive difference */
+    color: #4CAF50; /* Green */
 }
 
 .kpi-card .negative {
-    color: #E53935; /* Deeper red for negative difference */
+    color: #E53935; /* Red */
 }
 
-/* Responsive Cards */
+/* Adjust padding for previous period text */
+.kpi-card p.previous-percentage {
+    font-size: 0.75em; /* Smaller text for previous period */
+    margin-top: 5px;
+}
+
+/* Responsive Grid */
+@media (max-width: 1200px) {
+    .kpi-cards {
+        grid-template-columns: repeat(2, 1fr); /* 2 cards per row on medium screens */
+    }
+}
+
 @media (max-width: 768px) {
     .kpi-cards {
         grid-template-columns: 1fr; /* Stack cards vertically on small screens */

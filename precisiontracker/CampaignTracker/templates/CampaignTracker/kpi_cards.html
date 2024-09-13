@@ -63,7 +63,7 @@
         <!-- Clicks KPI Card -->
 <!-- Google Display - Clicks -->
         <div class="kpi-card">
-            <h3>Google Display - Clicks</h3>
+            <h3>{{ campaign_type }}  - Clicks</h3>
             <p class="measurement">{{ data.total_clicks|floatformat:0|intcomma }}
                 {% if data.clicks_diffnum > 0 %}
                 <span class="positive">(+{{ data.clicks_diffnum|floatformat:0|intcomma }})</span>
