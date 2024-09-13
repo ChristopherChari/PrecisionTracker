@@ -319,30 +319,65 @@ def filter_campaigns(request):
             campaigns_by_type[campaign_type]['total_spend'] += campaign.spend
 
         # Now calculate the previous actuals and compare them
-        for campaign_type, data in campaigns_by_type.items():
-            # Get the previous period campaigns for this campaign_type
-            prev_campaigns = previous_campaigns.filter(campaign_type=campaign_type.split()[1])  # Removing channel prefix
-            for prev_campaign in prev_campaigns:
-                data['previous_spend'] += prev_campaign.spend
-                data['previous_impressions'] += prev_campaign.impressions
-                data['previous_clicks'] += prev_campaign.clicks
+        # Now calculate the previous actuals and compare them
+    for campaign_type, data in campaigns_by_type.items():
+        # Initialize the previous metrics to 0 to avoid KeyError
+        data['previous_spend'] = 0
+        data['previous_impressions'] = 0
+        data['previous_clicks'] = 0
+        data['previous_ctr'] = 0  # Initialize CTR to 0
+        data['previous_cpc'] = 0  # Initialize CPC to 0
 
-            # Calculate percentage differences with previous actuals
-            if data['previous_spend'] > 0:
-                data['spend_diff'] = ((data['total_spend'] - data['previous_spend']) / data['previous_spend']) * 100
-                data['spend_diffnum'] = ((data['total_spend'] - data['previous_spend']))
-            if data['previous_impressions'] > 0:
-                data['impressions_diff'] = ((data['total_impressions'] - data['previous_impressions']) / data['previous_impressions']) * 100
-                data['impressions_diffnum'] = ((data['total_impressions'] - data['previous_impressions']))
-            if data['previous_clicks'] > 0:
-                data['clicks_diff'] = ((data['total_clicks'] - data['previous_clicks']) / data['previous_clicks']) * 100
-                data['clicks_diffnum'] = ((data['total_clicks'] - data['previous_clicks']))
+        # Get the previous period campaigns for this campaign_type
+        prev_campaigns = previous_campaigns.filter(campaign_type=campaign_type.split()[1])  # Removing channel prefix
+        
+        for prev_campaign in prev_campaigns:
+            data['previous_spend'] += prev_campaign.spend
+            data['previous_impressions'] += prev_campaign.impressions
+            data['previous_clicks'] += prev_campaign.clicks
 
-            # Calculate CTR and CPC for the current period
-            if data['total_clicks'] > 0:
-                data['total_ctr'] = (data['total_clicks'] / data['total_impressions']) * 100 if data['total_impressions'] > 0 else 0
-                data['total_cpc'] = data['total_spend'] / data['total_clicks'] if data['total_clicks'] > 0 else 0
+        # Calculate previous CTR and CPC based on the total previous impressions and clicks
+        if data['previous_impressions'] > 0:
+            data['previous_ctr'] = (data['previous_clicks'] / data['previous_impressions']) * 100
 
+        if data['previous_clicks'] > 0:
+            data['previous_cpc'] = data['previous_spend'] / data['previous_clicks']
+
+        # Calculate percentage differences with previous actuals
+        if data['previous_spend'] > 0:
+            data['spend_diff'] = ((data['total_spend'] - data['previous_spend']) / data['previous_spend']) * 100
+            data['spend_diffnum'] = data['total_spend'] - data['previous_spend']
+
+        if data['previous_impressions'] > 0:
+            data['impressions_diff'] = ((data['total_impressions'] - data['previous_impressions']) / data['previous_impressions']) * 100
+            data['impressions_diffnum'] = data['total_impressions'] - data['previous_impressions']
+
+        if data['previous_clicks'] > 0:
+            data['clicks_diff'] = ((data['total_clicks'] - data['previous_clicks']) / data['previous_clicks']) * 100
+            data['clicks_diffnum'] = data['total_clicks'] - data['previous_clicks']
+
+        # Calculate CTR and CPC for the current period
+        if data['total_impressions'] > 0:
+            data['total_ctr'] = (data['total_clicks'] / data['total_impressions']) * 100
+        else:
+            data['total_ctr'] = 0  # No impressions, so CTR is 0
+
+        if data['total_clicks'] > 0:
+            data['total_cpc'] = data['total_spend'] / data['total_clicks']
+        else:
+            data['total_cpc'] = 0  # No clicks, so CPC is 0
+
+        # Calculate CTR percentage difference and absolute difference
+        if data['previous_ctr'] > 0:
+            data['ctr_diff'] = ((data['total_ctr'] - data['previous_ctr']) / data['previous_ctr']) * 100
+            data['ctr_diffnum'] = data['total_ctr'] - data['previous_ctr']
+
+        # Calculate CPC percentage difference and absolute difference
+        if data['previous_cpc'] > 0:
+            data['cpc_diff'] = ((data['total_cpc'] - data['previous_cpc']) / data['previous_cpc']) * 100
+            data['cpc_diffnum'] = data['total_cpc'] - data['previous_cpc']
+
+   
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         rendered_campaigns = render_to_string('CampaignTracker/campaign_list.html', {
             'campaigns_by_type': campaigns_by_type,
