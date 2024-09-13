@@ -77,11 +77,12 @@ nav a:hover {
 /* Main Content */
 .main-content {
     display: flex;
-    justify-content: space-between;
-    gap: 30px;
+    gap: 15px; /* Reduced the gap between filter and table/KPI cards */
     max-width: 1300px;
     margin: 20px auto;
     padding-top: 30px;
+    justify-content: flex-start;
+    align-items: flex-start;
 }
 
 /* Filter Form Styling */
@@ -90,10 +91,13 @@ nav a:hover {
     padding: 20px;
     border-radius: var(--border-radius);
     box-shadow: var(--shadow-light);
-    max-width: 250px;
+    width: 250px;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
+    position: absolute; /* Make sure it's aligned to the left of the page */
+    top: 260px; /* Adjust as needed to align with the top */
+    left: 0; /* Aligns the filter to the left of the page */
 }
 
 .filter-bar label {
@@ -123,6 +127,7 @@ nav a:hover {
 /* Table Styling */
 .table-container {
     flex: 2;
+    margin-left: 10px; /* Reduced the left margin for the table */
 }
 
 table {
@@ -186,21 +191,27 @@ th, td {
 /* KPI Cards */
 .kpi-cards {
     display: grid;
-    grid-template-columns: repeat(3, 1fr); /* 3 cards per row */
-    gap: 25px; /* Increased gap between the cards */
-    padding: 20px;
-    width: 100%;
+    grid-template-columns: repeat(5, 1fr); /* Display 5 cards per row */
+    gap: 20px; /* Spacing between cards */
+    padding: 10px;
+    width: 400%;
+    top: 400px; /* Changed from 200% to 100% to prevent overflow */
+    margin-left: 0; /* Center the cards */
+}
+
+.kpi-row {
+    display: contents; /* Ensure each row contains cards for one campaign type */
+    gap: 20px;
+    width: 100%; /* Ensure it takes full width */
 }
 
 .kpi-card {
     background-color: white;
-    width: 140px; /* Slightly smaller card width */
     height: 140px; /* Adjusted card height */
     border-radius: 10px;
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
     text-align: center;
-    padding: 12px; /* Increased padding for text space */
-    margin: 10px; /* Added margin to ensure space between cards */
+    padding: 12px; /* Padding inside the cards */
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -215,21 +226,21 @@ th, td {
 }
 
 .kpi-card h3 {
-    font-size: 0.75em; /* Adjusted header font size */
+    font-size: 0.75em;
     margin-bottom: 6px;
     color: #557C56;
     font-weight: 600;
 }
 
 .kpi-card .measurement {
-    font-size: 1em; /* Reduced font size for measurement */
+    font-size: 1em;
     color: #FF885B;
     margin-bottom: 5px;
     font-weight: 500;
 }
 
 .kpi-card .percentage {
-    font-size: 0.85em; /* Reduced font size for percentage */
+    font-size: 0.85em;
     font-weight: bold;
 }
 
@@ -242,7 +253,7 @@ th, td {
 }
 
 .kpi-card p.previous-percentage {
-    font-size: 0.7em; /* Adjusted text size for previous period */
+    font-size: 0.7em;
     margin-top: 5px;
     color: #33372C;
 }
@@ -250,13 +261,21 @@ th, td {
 /* Responsive Grid */
 @media (max-width: 1200px) {
     .kpi-cards {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(3, 1fr); /* 3 cards per row on medium screens */
     }
 }
 
 @media (max-width: 768px) {
     .kpi-cards {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr); /* 2 cards per row on smaller screens */
+        padding: 20px;
+    }
+}
+
+@media (max-width: 576px) {
+    .kpi-cards {
+        grid-template-columns: 1fr; /* Stack cards vertically on very small screens */
+        padding: 10px;
     }
 
     .main-content {
@@ -264,7 +283,14 @@ th, td {
         align-items: center;
     }
 
-    table {
-        width: 100%;
+    .filter-bar {
+        position: relative;
+        top: 0;
+        left: 0;
+    }
+
+    .table-container,
+    .kpi-cards {
+        margin-left: 0;
     }
 }

@@ -208,7 +208,7 @@ def filter_campaigns(request):
     selected_channel = request.GET.get('channel', request.session.get('selected_channel'))
     start_date = request.GET.get('start_date', request.session.get('selected_start_date'))
     end_date = request.GET.get('end_date', request.session.get('selected_end_date'))
-    comparison_period = request.GET.get('comparison_period','month')  # Comparison period: 7 days or month
+    comparison_period = request.GET.get('comparison_period','7days')  # Comparison period: 7 days or month
     
 
     # Store session data
