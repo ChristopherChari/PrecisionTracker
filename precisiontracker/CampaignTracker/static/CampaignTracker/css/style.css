@@ -1,21 +1,51 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Poppins:wght@400;600;700&display=swap');
 
+/* Color Palette and UI Variables */
+:root {
+    --primary-color: #557C56;
+    --secondary-color: #FF885B;
+    --background-color: #FFE5CF;
+    --text-color: #33372C;
+    --white-color: #fff;
+    --green-color: #228B22;
+    --red-color: #B22222;
+    --campaign-type-color: #fcb851; /* New distinct color for campaign type rows */
+    --shadow-light: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    --shadow-medium: 0px 6px 12px rgba(0, 0, 0, 0.15);
+    --border-radius: 10px;
+    --transition-speed: 0.3s;
+}
 
-/* General Styles */
 /* General Styles */
 body {
-    font-family: 'Roboto', sans-serif;
-    background-color: #FFE5CF;
-    color: #33372C;
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
     margin: 0;
     padding: 0;
     line-height: 1.6;
+    transition: background-color var(--transition-speed), color var(--transition-speed);
 }
 
-/* Header Styles */
+/* Typography */
+h1, h2, h3, p {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 400;
+}
+
+h1 {
+    font-weight: 700;
+}
+
+h2, h3 {
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+
+/* Navigation */
 header {
-    background-color: #557C56;
-    color: white;
+    background-color: var(--primary-color);
+    color: var(--white-color);
     padding: 20px 0;
     text-align: center;
 }
@@ -25,26 +55,26 @@ header h1 {
     font-size: 2.5em;
 }
 
-/* Navigation Bar */
 nav {
     text-align: center;
-    background-color: #FF885B;
+    background-color: var(--secondary-color);
     padding: 10px;
 }
 
 nav a {
-    color: white;
+    color: var(--white-color);
     text-decoration: none;
     margin: 0 15px;
     font-size: 1.2em;
     font-weight: bold;
+    transition: color var(--transition-speed);
 }
 
 nav a:hover {
-    color: #FFE5CF;
+    color: var(--background-color);
 }
 
-/* Main Content: Align Filter, Table, and KPI Cards */
+/* Main Content */
 .main-content {
     display: flex;
     justify-content: space-between;
@@ -56,30 +86,38 @@ nav a:hover {
 
 /* Filter Form Styling */
 .filter-bar {
-    background-color: #FFE5CF;
-    padding: 15px;
-    border-radius: 10px;
-    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: var(--background-color);
+    padding: 20px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-light);
     max-width: 250px;
     display: flex;
     flex-direction: column;
+    align-items: flex-start;
 }
 
-/* Label and Input Styling */
 .filter-bar label {
     font-size: 1em;
     margin-bottom: 8px;
-    color: #33372C;
+    color: var(--text-color);
 }
 
 .filter-bar select,
 .filter-bar input {
-    padding: 8px;
+    padding: 10px;
     font-size: 0.9em;
-    border: 1px solid #557C56;
-    border-radius: 5px;
+    border: 1px solid var(--primary-color);
+    border-radius: var(--border-radius);
     margin-bottom: 15px;
     width: 100%;
+    box-sizing: border-box;
+    transition: border-color var(--transition-speed);
+}
+
+.filter-bar select:focus, 
+.filter-bar input:focus {
+    border-color: var(--secondary-color);
+    outline: none;
 }
 
 /* Table Styling */
@@ -89,70 +127,86 @@ nav a:hover {
 
 table {
     width: 100%;
+    margin: 20px auto;
     border-collapse: collapse;
-    margin: 20px 0;
     font-size: 1em;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    border-radius: 10px;
-    overflow: hidden;
+    background-color: var(--white-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-light);
+    text-align: right;
 }
 
-table th,
-table td {
+th, td {
     padding: 15px;
-    border-bottom: 1px solid #ddd;
-    text-align: center;
+    border: 1px solid var(--text-color);
+    font-weight: 500;
+    vertical-align: middle;
+    transition: background-color var(--transition-speed), color var(--transition-speed);
 }
 
-table th {
-    background-color: #557C56;
-    color: white;
-    font-size: 1.1em;
+th {
+    background-color: var(--primary-color);
+    color: var(--white-color);
     text-transform: uppercase;
 }
 
-table tr:nth-child(even) {
+tr:nth-child(even) {
     background-color: #f9f9f9;
 }
 
-table tr:hover {
-    background-color: #FF885B;
-    color: white;
+tr:hover {
+    background-color: var(--secondary-color);
+    color: var(--white-color);
 }
 
-/* KPI Cards Grid */
+/* Campaign Type Row Color */
+td[colspan="6"] {
+    background-color: var(--campaign-type-color); /* Use the new distinct color */
+    color: var(--text-color);
+    font-weight: bold;
+    font-size: 1.1em;
+    text-align: center;
+}
+
+th, td {
+    transition: background-color 0.3s ease;
+}
+
+/* Green and Red for highlighting differences */
+.green {
+    background-color: var(--green-color);
+    color: var(--white-color);
+}
+
+.red {
+    background-color: var(--red-color);
+    color: var(--white-color);
+}
+
+/* KPI Cards */
 .kpi-cards {
     display: grid;
     grid-template-columns: repeat(3, 1fr); /* 3 cards per row */
-    gap: 15px; /* Smaller gap for more compact design */
+    gap: 25px; /* Increased gap between the cards */
     padding: 20px;
     width: 100%;
 }
 
-/* KPI Cards Grid */
-.kpi-cards {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr); /* 3 cards per row */
-    gap: 15px;
-    padding: 20px;
-    width: 100%;
-}
-
-/* Individual KPI Card */
 .kpi-card {
     background-color: white;
-    width: 150px; /* Square shape */
-    height: 150px; /* Square shape */
+    width: 140px; /* Slightly smaller card width */
+    height: 140px; /* Adjusted card height */
     border-radius: 10px;
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
     text-align: center;
-    padding: 10px;
+    padding: 12px; /* Increased padding for text space */
+    margin: 10px; /* Added margin to ensure space between cards */
     display: flex;
     flex-direction: column;
     justify-content: center;
     font-weight: 400;
     overflow: hidden;
-    transition: all 0.3s ease;
+    transition: transform 0.3s, box-shadow 0.3s;
 }
 
 .kpi-card:hover {
@@ -160,53 +214,57 @@ table tr:hover {
     transform: translateY(-5px);
 }
 
-/* KPI Card Header */
 .kpi-card h3 {
-    font-size: 0.8em; /* Smaller header font */
+    font-size: 0.75em; /* Adjusted header font size */
     margin-bottom: 6px;
     color: #557C56;
-    font-weight: 500;
+    font-weight: 600;
 }
 
-/* KPI Measurement */
 .kpi-card .measurement {
-    font-size: 1.1em; /* Smaller font for numbers */
+    font-size: 1em; /* Reduced font size for measurement */
     color: #FF885B;
     margin-bottom: 5px;
     font-weight: 500;
 }
 
-/* Percentage Difference */
 .kpi-card .percentage {
-    font-size: 0.9em; /* Reduced font size */
+    font-size: 0.85em; /* Reduced font size for percentage */
     font-weight: bold;
-    margin-top: 3px;
 }
 
-/* Positive/Negative Percentage Difference Colors */
 .kpi-card .positive {
-    color: #4CAF50; /* Green */
+    color: #4CAF50;
 }
 
 .kpi-card .negative {
-    color: #E53935; /* Red */
+    color: #E53935;
 }
 
-/* Adjust padding for previous period text */
 .kpi-card p.previous-percentage {
-    font-size: 0.75em; /* Smaller text for previous period */
+    font-size: 0.7em; /* Adjusted text size for previous period */
     margin-top: 5px;
+    color: #33372C;
 }
 
 /* Responsive Grid */
 @media (max-width: 1200px) {
     .kpi-cards {
-        grid-template-columns: repeat(2, 1fr); /* 2 cards per row on medium screens */
+        grid-template-columns: repeat(2, 1fr);
     }
 }
 
 @media (max-width: 768px) {
     .kpi-cards {
-        grid-template-columns: 1fr; /* Stack cards vertically on small screens */
+        grid-template-columns: 1fr;
+    }
+
+    .main-content {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    table {
+        width: 100%;
     }
 }
