@@ -169,7 +169,7 @@ td[colspan="6"] {
 }
 
 th, td {
-    transition: background-color 0.3s ease;
+    transition: background-color var(--transition-speed), color var(--transition-speed);
 }
 
 /* Green and Red for highlighting differences */
