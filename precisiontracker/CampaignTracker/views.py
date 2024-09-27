@@ -1,30 +1,21 @@
 import csv
 from collections import defaultdict
-from turtle import home
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from .models import Client, Campaign, MonthlyData
-from django.core.files.storage import FileSystemStorage
-from django.utils.dateparse import parse_date
-from .forms import CampaignForm, CampaignFilterForm
-from django.db import transaction
-
-from datetime import timedelta
 from decimal import Decimal  # Import Decimal
+from datetime import datetime, timedelta
 
-from django.shortcuts import render, get_object_or_404
-from .models import Client, Campaign
-from .forms import CampaignNameMappingForm, CampaignUploadForm
-
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.core.files.storage import FileSystemStorage
+from django.utils.dateparse import parse_date  # Check if you use it, otherwise remove it
+from django.db import transaction
 from django.http import JsonResponse
 from django.template.loader import render_to_string
 
+from .models import Client, Campaign, MonthlyData, Target
+from .forms import CampaignForm, CampaignFilterForm, CampaignNameMappingForm, CampaignUploadForm, TargetForm
 
-from django.shortcuts import render, redirect
-from .forms import  TargetForm
-from .models import Target, Client
-import logging
-from datetime import datetime
+# Consolidate imports from the same module to reduce redundancy
+
 
 # Mapping for Campaign Group to Client name
 CAMPAIGN_GROUP_TO_CLIENT = {
@@ -42,9 +33,6 @@ def get_or_create_client_from_campaign_group(campaign_group):
     client_name = CAMPAIGN_GROUP_TO_CLIENT.get(campaign_group, campaign_group)  # Default to the campaign group itself if not in the map
     client, created = Client.objects.get_or_create(name=client_name)
     return client
-
-from django.shortcuts import get_object_or_404
-from datetime import datetime
 
 def enter_targets(request):
     form = None
@@ -165,10 +153,6 @@ def get_products_for_client(request):
         products = list(campaigns)
 
     return JsonResponse({'products': products})
-
-from datetime import timedelta
-
-from datetime import timedelta, date
 
 def get_previous_period_data(client, product, channel, start_date, end_date, period='7days'):
     # Get the previous period's date range
@@ -388,6 +372,8 @@ def filter_campaigns(request):
         })
         return JsonResponse({'html': rendered_campaigns, 'kpi_html': rendered_kpis})
 
+    
+
     return render(request, 'CampaignTracker/filter_campaigns.html', {
         'clients': clients,
         'campaigns_by_type': campaigns_by_type,
@@ -439,10 +425,6 @@ def name_mapping_ajax(request):
         'combined_data': campaigns,
     })
     return JsonResponse({'html': rendered_table})
-# Initialize logger
-logger = logging.getLogger(__name__)
-
-from django.contrib import messages
 
 def upload_campaign_report(request):
     campaigns = []
@@ -520,7 +502,7 @@ def upload_campaign_report(request):
                         clicks = int(str(row.get('Clicks', 0)).replace(',', ''))
                         spend = float(str(row.get('Media Cost', 0)).replace(',', '').replace('£', ''))
                         budget = float(str(row.get('Budget', 0)).replace(',', ''))
-                        campaign_date = datetime.strptime(row['Date'], '%Y-%m-%d').date()
+                        campaign_date = datetime.strptime(row['Date'], '%d/%m/%').date()
 
                         # Retrieve client from the Campaign Group column
                         client = get_or_create_client_from_campaign_group(row['Campaign Group'])

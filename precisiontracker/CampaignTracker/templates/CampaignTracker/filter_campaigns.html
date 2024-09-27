@@ -52,7 +52,7 @@
             });
 
             // Trigger the campaign list update when any filter changes
-            $('#client, #product, #channel, #start_date, #end_date').on('change', function () {
+            $('#client, #product, #channel, #campaign_type, #start_date, #end_date').on('change', function () {
                 updateCampaignList();
             });
 
@@ -65,32 +65,30 @@
             }
         });
     </script>
-   <script>
-    $(document).ready(function () {
-    // Function to update the KPI cards when filters change
-    function updateKpiCards() {
-        $.ajax({
-            url: "{% url 'home' %}",  // Adjust URL if necessary
-            data: $('#filter-form').serialize(),  // Serialize form data, including comparison_period
-            success: function (response) {
-                // Clear existing cards and append new ones
-                $('#kpi-cards').html(response.kpi_html);
-            },
-            error: function () {
-                alert('Error loading data.');
+
+    <script>
+        $(document).ready(function () {
+            // Function to update the KPI cards when filters change
+            function updateKpiCards() {
+                $.ajax({
+                    url: "{% url 'home' %}",  // Adjust URL if necessary
+                    data: $('#filter-form').serialize(),  // Serialize form data, including comparison_period
+                    success: function (response) {
+                        // Clear existing cards and append new ones
+                        $('#kpi-cards').html(response.kpi_html);
+                    },
+                    error: function () {
+                        alert('Error loading data.');
+                    }
+                });
             }
+
+            // Trigger the KPI card update when the filters (including comparison_period) change
+            $('#filter-form select, #filter-form input').on('change', function () {
+                updateKpiCards();
+            });
         });
-    }
-
-    // Trigger the KPI card update when the filters (including comparison_period) change
-    $('#filter-form select, #filter-form input').on('change', function () {
-        updateKpiCards();
-    });
-});
-
-
-</script>
-
+    </script>
 </head>
 <body>
     <img src="{% static 'CampaignTracker\css\images\pcm-logo.png' %}" alt="PCM Logo" class="logo">
@@ -119,6 +117,7 @@
                     <option value="Google" {% if selected_channel == 'Google' %}selected{% endif %}>Google</option>
                     <option value="Stackadapt" {% if selected_channel == 'Stackadapt' %}selected{% endif %}>Stackadapt</option>
                 </select>
+
 
                 <label for="start_date">Start Date:</label>
                 <input type="date" name="start_date" id="start_date" value="{{ selected_start_date }}">
