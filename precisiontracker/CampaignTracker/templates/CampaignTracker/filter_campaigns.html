@@ -116,8 +116,16 @@
                     <option value="">-- All Channels --</option>
                     <option value="Google" {% if selected_channel == 'Google' %}selected{% endif %}>Google</option>
                     <option value="Stackadapt" {% if selected_channel == 'Stackadapt' %}selected{% endif %}>Stackadapt</option>
-                </select>
+                </select>   
 
+                        <!-- New Campaign Type Dropdown -->
+            <label for="campaign_type">Select Campaign Type:</label>
+            <select name="campaign_type" id="campaign_type">
+                <option value="">-- All Campaign Types --</option>
+                <option value="Video" {% if selected_campaign_type == 'Video' %}selected{% endif %}>Video</option>
+                <option value="Display" {% if selected_campaign_type == 'Display' %}selected{% endif %}>Display</option>
+                <option value="Search" {% if selected_campaign_type == 'Search' %}selected{% endif %}>Search</option>
+            </select>
 
                 <label for="start_date">Start Date:</label>
                 <input type="date" name="start_date" id="start_date" value="{{ selected_start_date }}">

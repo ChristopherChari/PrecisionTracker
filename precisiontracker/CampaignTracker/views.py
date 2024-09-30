@@ -193,6 +193,7 @@ def filter_campaigns(request):
     start_date = request.GET.get('start_date', request.session.get('selected_start_date'))
     end_date = request.GET.get('end_date', request.session.get('selected_end_date'))
     comparison_period = request.GET.get('comparison_period','7days')  # Comparison period: 7 days or month
+    campaign_type = request.GET.get('campaign_type', request.session.get('selected_campaign_type'))  # Campaign Type filter
     
 
     # Store session data
@@ -206,7 +207,9 @@ def filter_campaigns(request):
         request.session['selected_start_date'] = start_date
     if end_date:
         request.session['selected_end_date'] = end_date
-
+    if campaign_type:
+        request.session['selected_campaign_type'] = campaign_type
+  
     # If the client_id is invalid or the client was deleted, reset the session
     if client_id:
         try:
@@ -239,6 +242,8 @@ def filter_campaigns(request):
         
         if selected_channel:
             campaigns = campaigns.filter(channel=selected_channel)
+        if campaign_type:
+            campaigns = campaigns.filter(campaign_type=campaign_type)
 
         # Fetch previous period campaigns for comparison
         previous_campaigns = Campaign.objects.filter(
@@ -383,6 +388,7 @@ def filter_campaigns(request):
         'selected_start_date': start_date,
         'selected_end_date': end_date,
         'comparison_period': comparison_period,
+        'selected_campaign_type': campaign_type,
     })
 
 
@@ -502,7 +508,7 @@ def upload_campaign_report(request):
                         clicks = int(str(row.get('Clicks', 0)).replace(',', ''))
                         spend = float(str(row.get('Media Cost', 0)).replace(',', '').replace('£', ''))
                         budget = float(str(row.get('Budget', 0)).replace(',', ''))
-                        campaign_date = datetime.strptime(row['Date'], '%d/%m/%').date()
+                        campaign_date = datetime.strptime(row['Date'], '%d/%m/%Y').date()
 
                         # Retrieve client from the Campaign Group column
                         client = get_or_create_client_from_campaign_group(row['Campaign Group'])
