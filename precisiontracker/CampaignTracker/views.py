@@ -432,6 +432,8 @@ def name_mapping_ajax(request):
     })
     return JsonResponse({'html': rendered_table})
 
+from django.db import transaction
+
 def upload_campaign_report(request):
     campaigns = []
     combined_data = []
@@ -463,7 +465,6 @@ def upload_campaign_report(request):
 
             # Handle different file structure for Google vs. Stackadapt
             if selected_channel == 'Google':
-                # Google processing logic
                 for row in reader:
                     try:
                         impressions = int(str(row.get('Impr.', 0)).replace(',', ''))  # Convert impressions to integer
@@ -478,37 +479,37 @@ def upload_campaign_report(request):
                         # Automatically map the product if it already exists for the campaign name
                         product_name = campaign_name_to_product.get(row['Campaign'], '')
 
-                        # Process campaign data
-                        campaign, created = Campaign.objects.get_or_create(
-                            name=row['Campaign'],
-                            start_date=campaign_date,
-                            end_date=campaign_date,
-                            client=client,
-                            defaults={
-                                'campaign_type': row['Campaign type'],
-                                'budget': budget,
-                                'spend': spend,
-                                'impressions': impressions,
-                                'clicks': clicks,
-                                'channel': selected_channel,
-                                'product': product_name,  # Automatically map product if it exists
-                            }
-                        )
-                        combined_data.append(campaign)
+                        # Wrap the get_or_create in a transaction to handle updates
+                        with transaction.atomic():
+                            campaign, created = Campaign.objects.update_or_create(
+                                name=row['Campaign'],
+                                client=client,
+                                start_date=campaign_date,
+                                end_date=campaign_date,
+                                channel=selected_channel,
+                                defaults={
+                                    'campaign_type': row['Campaign type'],
+                                    'budget': budget,
+                                    'spend': spend,
+                                    'impressions': impressions,
+                                    'clicks': clicks,
+                                    'product': product_name,
+                                }
+                            )
+                            combined_data.append(campaign)
 
                     except Exception as e:
                         messages.error(request, f"Error processing row: {row['Campaign']} - {str(e)}")
                         continue
 
             elif selected_channel == 'Stackadapt':
-                # Stackadapt-specific processing logic
                 for row in reader:
                     try:
                         impressions = int(str(row.get('Impressions', 0)).replace(',', ''))
                         clicks = int(str(row.get('Clicks', 0)).replace(',', ''))
                         spend = float(str(row.get('Media Cost', 0)).replace(',', '').replace('£', ''))
                         budget = float(str(row.get('Budget', 0)).replace(',', ''))
-                        campaign_date = datetime.strptime(row['Date'], '%d/%m/%Y').date()
+                        campaign_date = datetime.strptime(row['Date'], '%Y-%m-%d').date()
 
                         # Retrieve client from the Campaign Group column
                         client = get_or_create_client_from_campaign_group(row['Campaign Group'])
@@ -516,23 +517,24 @@ def upload_campaign_report(request):
                         # Automatically map the product if it already exists for the campaign name
                         product_name = campaign_name_to_product.get(row['Campaign'], '')
 
-                        # Process campaign data
-                        campaign, created = Campaign.objects.get_or_create(
-                            name=row['Campaign'],
-                            start_date=campaign_date,
-                            end_date=campaign_date,
-                            client=client,
-                            defaults={
-                                'campaign_type': row['Channel Type'],
-                                'budget': budget,
-                                'spend': spend,
-                                'impressions': impressions,
-                                'clicks': clicks,
-                                'channel': selected_channel,
-                                'product': product_name,  # Automatically map product if it exists
-                            }
-                        )
-                        combined_data.append(campaign)
+                        # Wrap the get_or_create in a transaction to handle updates
+                        with transaction.atomic():
+                            campaign, created = Campaign.objects.update_or_create(
+                                name=row['Campaign'],
+                                client=client,
+                                start_date=campaign_date,
+                                end_date=campaign_date,
+                                channel=selected_channel,
+                                defaults={
+                                    'campaign_type': row['Channel Type'],
+                                    'budget': budget,
+                                    'spend': spend,
+                                    'impressions': impressions,
+                                    'clicks': clicks,
+                                    'product': product_name,
+                                }
+                            )
+                            combined_data.append(campaign)
 
                     except Exception as e:
                         messages.error(request, f"Error processing row: {row['Campaign']} - {str(e)}")

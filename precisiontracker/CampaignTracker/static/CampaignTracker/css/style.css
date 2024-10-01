@@ -2,14 +2,14 @@
 
 /* Color Palette and UI Variables */
 :root {
-    --primary-color: #557C56;
-    --secondary-color: #FF885B;
-    --background-color: #FFE5CF;
-    --text-color: #33372C;
+    --primary-color: #454545; /* Dark Grey */
+    --secondary-color: #FF6000; /* Bright Orange */
+    --background-color: #FFE6C7; /* Soft Beige */
+    --text-color: #33372C; /* Dark text color */
     --white-color: #fff;
     --green-color: #228B22;
     --red-color: #B22222;
-    --campaign-type-color: #fcb851; /* New distinct color for campaign type rows */
+    --campaign-type-color: #FFA559; /* Lighter Orange for campaign type rows */
     --shadow-light: 0px 4px 8px rgba(0, 0, 0, 0.1);
     --shadow-medium: 0px 6px 12px rgba(0, 0, 0, 0.15);
     --border-radius: 10px;
@@ -95,9 +95,9 @@ nav a:hover {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    position: absolute; /* Make sure it's aligned to the left of the page */
-    top: 260px; /* Adjust as needed to align with the top */
-    left: 0; /* Aligns the filter to the left of the page */
+    position: absolute;
+    top: 260px;
+    left: 0;
 }
 
 .filter-bar label {
@@ -127,7 +127,7 @@ nav a:hover {
 /* Table Styling */
 .table-container {
     flex: 2;
-    margin-left: 10px; /* Reduced the left margin for the table */
+    margin-left: 10px;
 }
 
 table {
@@ -166,7 +166,7 @@ tr:hover {
 
 /* Campaign Type Row Color */
 td[colspan="6"] {
-    background-color: var(--campaign-type-color); /* Use the new distinct color */
+    background-color: var(--campaign-type-color);
     color: var(--text-color);
     font-weight: bold;
     font-size: 1.1em;
@@ -191,27 +191,27 @@ th, td {
 /* KPI Cards */
 .kpi-cards {
     display: grid;
-    grid-template-columns: repeat(5, 1fr); /* Display 5 cards per row */
-    gap: 20px; /* Spacing between cards */
+    grid-template-columns: repeat(5, 1fr);
+    gap: 20px;
     padding: 10px;
     width: 400%;
-    top: 400px; /* Changed from 200% to 100% to prevent overflow */
-    margin-left: 0; /* Center the cards */
+    top: 400px;
+    margin-left: 0;
 }
 
 .kpi-row {
-    display: contents; /* Ensure each row contains cards for one campaign type */
+    display: contents;
     gap: 20px;
-    width: 100%; /* Ensure it takes full width */
+    width: 100%;
 }
 
 .kpi-card {
-    background-color: white;
-    height: 140px; /* Adjusted card height */
+    background-color: var(--white-color);
+    height: 140px;
     border-radius: 10px;
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
     text-align: center;
-    padding: 12px; /* Padding inside the cards */
+    padding: 12px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -228,13 +228,13 @@ th, td {
 .kpi-card h3 {
     font-size: 0.75em;
     margin-bottom: 6px;
-    color: #557C56;
+    color: var(--primary-color);
     font-weight: 600;
 }
 
 .kpi-card .measurement {
     font-size: 1em;
-    color: #FF885B;
+    color: var(--secondary-color);
     margin-bottom: 5px;
     font-weight: 500;
 }
@@ -255,26 +255,26 @@ th, td {
 .kpi-card p.previous-percentage {
     font-size: 0.7em;
     margin-top: 5px;
-    color: #33372C;
+    color: var(--text-color);
 }
 
 /* Responsive Grid */
 @media (max-width: 1200px) {
     .kpi-cards {
-        grid-template-columns: repeat(3, 1fr); /* 3 cards per row on medium screens */
+        grid-template-columns: repeat(3, 1fr);
     }
 }
 
 @media (max-width: 768px) {
     .kpi-cards {
-        grid-template-columns: repeat(2, 1fr); /* 2 cards per row on smaller screens */
+        grid-template-columns: repeat(2, 1fr);
         padding: 20px;
     }
 }
 
 @media (max-width: 576px) {
     .kpi-cards {
-        grid-template-columns: 1fr; /* Stack cards vertically on very small screens */
+        grid-template-columns: 1fr;
         padding: 10px;
     }
 
