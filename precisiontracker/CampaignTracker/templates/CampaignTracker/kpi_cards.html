@@ -5,7 +5,7 @@
     <div class="kpi-row"> <!-- A row for each campaign type -->
 
         <!-- Cost KPI Card -->
-        <div class="kpi-card">
+        <!-- <div class="kpi-card">
             <h3>{{ campaign_type }} - Cost</h3>
             <p class="measurement">£{{ data.total_spend|floatformat:2|intcomma }}
                 {% if data.spend_diffnum > 0 %}
@@ -30,10 +30,10 @@
                     No data for comparison.
                 {% endif %}
             </p>
-        </div>
+        </div> -->
 
         <!-- Impressions KPI Card -->
-        <div class="kpi-card">
+        <!-- <div class="kpi-card">
             <h3>{{ campaign_type }} - Impressions</h3>
             <p class="measurement">{{ data.total_impressions|floatformat:0|intcomma }}
                 {% if data.impressions_diffnum > 0 %}
@@ -58,7 +58,7 @@
                     No data for comparison.
                 {% endif %}
             </p>
-        </div>
+        </div> -->
 
         <!-- Clicks KPI Card -->
         <div class="kpi-card">
@@ -86,6 +86,7 @@
                     No data for comparison.
                 {% endif %}
             </p>
+            </div>
         </div>
 
         <!-- CTR KPI Card -->

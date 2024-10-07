@@ -23,13 +23,13 @@
                         let productSelect = $('#product');
                         productSelect.empty();  // Clear previous options
                         productSelect.append('<option value="">-- Select Product --</option>');
+                        productSelect.append('<option value="all">-- All Products --</option>');  // Add "All Products" option
                         data.products.forEach(function (product) {
                             productSelect.append('<option value="' + product + '">' + product + '</option>');
                         });
                     }
                 });
             }
-
             // Function to update the campaign list based on selected filters
             function updateCampaignList() {
                 $.ajax({
@@ -109,6 +109,7 @@
                 <label for="product">Select Product:</label>
                 <select name="product" id="product">
                     <option value="">-- Select Product --</option>
+                    <option value="all">-- All Products --</option> 
                 </select>
 
                 <label for="channel">Select Channel:</label>
