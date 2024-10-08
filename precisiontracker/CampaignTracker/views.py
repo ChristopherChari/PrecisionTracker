@@ -540,7 +540,7 @@ def upload_campaign_report(request):
                         clicks = int(str(row.get('Clicks', 0)).replace(',', ''))
                         spend = float(str(row.get('Media Cost', 0)).replace(',', '').replace('£', ''))
                         budget = float(str(row.get('Budget', 0)).replace(',', ''))
-                        campaign_date = datetime.strptime(row['Date'], '%Y-%m-%d').date()
+                        campaign_date = datetime.strptime(row['Date'], '%d/%m/%Y').date()
 
                         # Retrieve client from the Campaign Group column
                         client = get_or_create_client_from_campaign_group(row['Campaign Group'])

@@ -191,7 +191,7 @@ th, td {
 /* KPI Cards */
 .kpi-cards {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, 2fr);
     gap: 20px;
     padding: 10px;
     width: 400%;
@@ -208,6 +208,7 @@ th, td {
 .kpi-card {
     background-color: var(--white-color);
     height: 140px;
+    width: 140px;
     border-radius: 10px;
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
     text-align: center;
