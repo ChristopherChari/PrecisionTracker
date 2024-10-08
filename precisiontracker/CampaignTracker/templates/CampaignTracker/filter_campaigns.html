@@ -59,6 +59,9 @@
             // Initialize: ensure no product is selected on page load
             $('#product').empty().append('<option value="">-- Select Product --</option>');
 
+             // Initialize: ensure no product is selected on page load
+             $('#channel').empty().append('<option value="">-- All Channels --</option>');
+
             // If filters are already selected, auto-update the campaign list
             if ($('#client').val() || $('#start_date').val() || $('#end_date').val() || $('#channel').val()) {
                 updateCampaignList();
@@ -182,6 +185,7 @@
             </table>
         </div>
     </div>
-    <div id="kpi-cards" class="kpi-cards"></div>
+    <div id="kpi-cards" class="kpi-cards">
+    </div>
 </body>
 </html>

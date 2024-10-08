@@ -4,62 +4,7 @@
     {% for campaign_type, data in campaigns_by_type.items %}
     <div class="kpi-row"> <!-- A row for each campaign type -->
 
-        <!-- Cost KPI Card -->
-        <!-- <div class="kpi-card">
-            <h3>{{ campaign_type }} - Cost</h3>
-            <p class="measurement">£{{ data.total_spend|floatformat:2|intcomma }}
-                {% if data.spend_diffnum > 0 %}
-                <span class="negative">(+{{ data.spend_diffnum|floatformat:2|intcomma }})</span>
-                {% else %}
-                <span class="positive">({{ data.spend_diffnum|floatformat:2|intcomma }})</span>
-                {% endif %}
-            </p>
-            <p class="previous-percentage">
-                {% if comparison_period == '7days' %}
-                    vs. previous 7 days
-                {% else %}
-                    vs. previous month
-                {% endif %}:
-                {% if data.previous_spend > 0 %}
-                    {% if data.spend_diff > 0 %}
-                        <span class="negative">+{{ data.spend_diff|floatformat:2 }}%</span>
-                    {% else %}
-                        <span class="positive">{{ data.spend_diff|floatformat:2 }}%</span>
-                    {% endif %}
-                {% else %}
-                    No data for comparison.
-                {% endif %}
-            </p>
-        </div> -->
-
-        <!-- Impressions KPI Card -->
-        <!-- <div class="kpi-card">
-            <h3>{{ campaign_type }} - Impressions</h3>
-            <p class="measurement">{{ data.total_impressions|floatformat:0|intcomma }}
-                {% if data.impressions_diffnum > 0 %}
-                <span class="positive">(+{{ data.impressions_diffnum|floatformat:0|intcomma }})</span>
-                {% else %}
-                <span class="negative">({{ data.impressions_diffnum|floatformat:0|intcomma }})</span>
-                {% endif %}
-            </p>
-            <p class="previous-percentage">
-                {% if comparison_period == '7days' %}
-                    vs. previous 7 days
-                {% else %}
-                    vs. previous month
-                {% endif %}:
-                {% if data.previous_impressions > 0 %}
-                    {% if data.impressions_diff > 0 %}
-                        <span class="positive">+{{ data.impressions_diff|floatformat:2 }}%</span>
-                    {% else %}
-                        <span class="negative">{{ data.impressions_diff|floatformat:2 }}%</span>
-                    {% endif %}
-                {% else %}
-                    No data for comparison.
-                {% endif %}
-            </p>
-        </div> -->
-
+        
         <!-- Clicks KPI Card -->
         <div class="kpi-card">
             <h3>{{ campaign_type }} - Clicks</h3>
@@ -86,7 +31,6 @@
                     No data for comparison.
                 {% endif %}
             </p>
-            </div>
         </div>
 
         <!-- CTR KPI Card -->

@@ -191,28 +191,27 @@ th, td {
 /* KPI Cards */
 .kpi-cards {
     display: grid;
-    grid-template-columns: repeat(3, 2fr);
-    gap: 20px;
+    grid-template-columns: repeat(3, 1fr); /* Display 5 cards per row */
+    gap: 20px; /* Spacing between cards */
     padding: 10px;
     width: 400%;
-    top: 400px;
-    margin-left: 0;
+    top: 400px; /* Changed from 200% to 100% to prevent overflow */
+    margin-left: 0; /* Center the cards */
 }
 
 .kpi-row {
-    display: contents;
+    display: contents; /* Ensure each row contains cards for one campaign type */
     gap: 20px;
-    width: 100%;
+    width: 100%; /* Ensure it takes full width */
 }
 
 .kpi-card {
-    background-color: var(--white-color);
-    height: 140px;
-    width: 140px;
+    background-color: white;
+    height: 140px; /* Adjusted card height */
     border-radius: 10px;
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
     text-align: center;
-    padding: 12px;
+    padding: 12px; /* Padding inside the cards */
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -229,13 +228,13 @@ th, td {
 .kpi-card h3 {
     font-size: 0.75em;
     margin-bottom: 6px;
-    color: var(--primary-color); /* Black */
+    color: #557C56;
     font-weight: 600;
 }
 
 .kpi-card .measurement {
     font-size: 1em;
-    color: var(--secondary-color); /* Red */
+    color: #FF885B;
     margin-bottom: 5px;
     font-weight: 500;
 }
@@ -250,32 +249,32 @@ th, td {
 }
 
 .kpi-card .negative {
-    color: var(--red-color); /* Red */
+    color: #E53935;
 }
 
 .kpi-card p.previous-percentage {
     font-size: 0.7em;
     margin-top: 5px;
-    color: var(--text-color); /* Black */
+    color: #33372C;
 }
 
 /* Responsive Grid */
 @media (max-width: 1200px) {
     .kpi-cards {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(3, 1fr); /* 3 cards per row on medium screens */
     }
 }
 
 @media (max-width: 768px) {
     .kpi-cards {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(2, 1fr); /* 2 cards per row on smaller screens */
         padding: 20px;
     }
 }
 
 @media (max-width: 576px) {
     .kpi-cards {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr; /* Stack cards vertically on very small screens */
         padding: 10px;
     }
 

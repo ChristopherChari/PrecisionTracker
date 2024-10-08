@@ -378,6 +378,8 @@ def filter_campaigns(request):
                                         if data['previous_impressions'] > 0 else 0)
             data['clicks_diff'] = ((data['total_clicks'] - data['previous_clicks']) / data['previous_clicks'] * 100
                                    if data['previous_clicks'] > 0 else 0)
+            data['clicks_diffnum'] = ((data['total_clicks'] - data['previous_clicks'])
+                                   if data['previous_clicks'] > 0 else 0)
             # Calculate CTR and CPC for the current period
             data['total_ctr'] = (data['total_clicks'] / data['total_impressions'] * 100
                                  if data['total_impressions'] > 0 else 0)
