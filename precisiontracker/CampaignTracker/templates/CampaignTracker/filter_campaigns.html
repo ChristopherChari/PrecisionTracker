@@ -30,6 +30,7 @@
                     }
                 });
             }
+
             // Function to update the campaign list based on selected filters
             function updateCampaignList() {
                 $.ajax({
@@ -39,6 +40,11 @@
                         $('#campaign-list').html(data.html);
                     }
                 });
+            }
+
+            // Function to clear the campaign list (table) when the page is refreshed
+            function clearCampaignList() {
+                $('#campaign-list').html('');  // Clears the HTML inside the campaign list table
             }
 
             // Trigger the product dropdown update when a client is selected
@@ -59,8 +65,11 @@
             // Initialize: ensure no product is selected on page load
             $('#product').empty().append('<option value="">-- Select Product --</option>');
 
-             // Initialize: ensure no product is selected on page load
-             $('#channel').empty().append('<option value="">-- All Channels --</option>');
+            // Default to "All Channels" in the channel dropdown
+            $('#channel').val('');  // Assuming the value for "All Channels" option is 'all'
+
+            // Clear the campaign list (table) when the page is refreshed
+            clearCampaignList();
 
             // If filters are already selected, auto-update the campaign list
             if ($('#client').val() || $('#start_date').val() || $('#end_date').val() || $('#channel').val()) {
