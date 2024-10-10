@@ -16,7 +16,18 @@
     <tbody>
         {% for campaign_type, data in campaigns_by_type.items %}
         <tr>
-            <td colspan="6"><strong>{{ campaign_type }}</strong></td>
+                                <!-- Display the campaign type, use "Programmatic" for Stackadapt campaigns -->
+                    <td colspan="6">
+                        <strong>
+                            {% if campaign_type == "Stackadapt Display" %}
+                                Programmatic Display
+                            {% elif campaign_type == "Stackadapt Video" %}
+                                Programmatic Video
+                            {% else %}
+                                {{ campaign_type }}
+                            {% endif %}
+                        </strong>
+                    </td>
         </tr>
         <tr>
             <td>Targets</td>
