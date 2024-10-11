@@ -2,12 +2,21 @@
     {% load humanize %}
 
     {% for campaign_type, data in campaigns_by_type.items %}
+    
     <div class="kpi-row"> <!-- A row for each campaign type -->
 
         
         <!-- Clicks KPI Card -->
         <div class="kpi-card">
-            <h3>{{ campaign_type }} - Clicks</h3>
+            <h3>
+                 {% if campaign_type == "Stackadapt Display" %}
+                Programmatic Display
+            {% elif campaign_type == "Stackadapt Video" %}
+                Programmatic Video
+            {% else %}
+                {{ campaign_type }}
+            {% endif %} - Clicks
+            </h3>
             <p class="measurement">{{ data.total_clicks|floatformat:0|intcomma }}
                 {% if data.clicks_diffnum > 0 %}
                 <span class="positive">(+{{ data.clicks_diffnum|floatformat:0|intcomma }})</span>
@@ -35,7 +44,15 @@
 
         <!-- CTR KPI Card -->
         <div class="kpi-card">
-            <h3>{{ campaign_type }} - CTR (%)</h3>
+            <h3>
+                {% if campaign_type == "Stackadapt Display" %}
+               Programmatic Display
+           {% elif campaign_type == "Stackadapt Video" %}
+               Programmatic Video
+           {% else %}
+               {{ campaign_type }}
+           {% endif %} - CTR (%)
+            </h3>
             <p class="measurement">{{ data.total_ctr|floatformat:2 }}%
                 {% if data.ctr_diffnum > 0 %}
                 <span class="positive">(+{{ data.ctr_diffnum|floatformat:2 }}%)</span>
@@ -63,7 +80,15 @@
 
         <!-- CPC KPI Card -->
         <div class="kpi-card">
-            <h3>{{ campaign_type }} - CPC</h3>
+            <h3>
+                {% if campaign_type == "Stackadapt Display" %}
+               Programmatic Display
+           {% elif campaign_type == "Stackadapt Video" %}
+               Programmatic Video
+           {% else %}
+               {{ campaign_type }}
+           {% endif %} - CPC
+            </h3>
             <p class="measurement">£{{ data.total_cpc|floatformat:2 }}
                 {% if data.cpc_diffnum > 0 %}
                 <span class="negative">(+£{{ data.cpc_diffnum|floatformat:2 }})</span>
