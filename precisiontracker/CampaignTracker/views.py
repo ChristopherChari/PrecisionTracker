@@ -1,3 +1,4 @@
+from asyncio.windows_events import NULL
 import csv
 from collections import defaultdict
 from decimal import Decimal  # Import Decimal
@@ -18,6 +19,14 @@ from .forms import CampaignForm, CampaignFilterForm, CampaignNameMappingForm, Ca
 
 
 # Mapping for Campaign Group to Client name
+CAMPAIGN_GROUP_TO_CLIENT = {
+    "Haliborange": "Haliborange - PCM",
+    "BIOGLAN": "Bioglan",
+    "Superfoods": "Bioglan Superfoods",
+    "PROMENSIL" : "Promensil",
+    "Skin Doctors" : "Skin Doctors - PCM"
+}
+
 CAMPAIGN_GROUP_TO_CLIENT = {
     "Haliborange": "Haliborange - PCM",
     "BIOGLAN": "Bioglan",
@@ -251,7 +260,6 @@ def filter_campaigns(request):
             start_date__gte=start_date,
             end_date__lte=end_date,
         )
-
         # If "All Products" is selected, do not filter by product
         if product and product != 'all':
             campaigns = campaigns.filter(product=product)
@@ -357,8 +365,10 @@ def filter_campaigns(request):
 
 
         # Now calculate the previous actuals and compare them
+        # Now calculate the previous actuals and compare them
         for campaign_type, data in campaigns_by_type.items():
-            prev_campaigns = previous_campaigns.filter(campaign_type=campaign_type.split()[1])
+            channel, campaign_type_name = campaign_type.split(' ', 1)  # Extract both the channel and campaign type
+            prev_campaigns = previous_campaigns.filter(campaign_type=campaign_type_name, channel=channel)
 
             for prev_campaign in prev_campaigns:
                 data['previous_spend'] += prev_campaign.spend
