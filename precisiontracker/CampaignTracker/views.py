@@ -320,11 +320,18 @@ def filter_campaigns(request):
                 target_ctr = (target_clicks / target_impressions) * 100
             else:
                 target_ctr = 0
+            
+            if target_impressions > 0:
+                target_cpm = (target_spend / target_impressions) * 1000
+            else:
+                target_cpm = 0
 
             if target_clicks > 0:
                 target_cpc = target_spend / target_clicks
             else:
                 target_cpc = 0
+            
+            
 
             # Proportionally adjust the target values based on the selected date range
             days_in_month = (relevant_targets.first().month.replace(
@@ -344,11 +351,13 @@ def filter_campaigns(request):
                     'total_spend': 0,
                     'total_ctr': 0,
                     'total_cpc': 0,
+                    'total_cpm': 0,
                     'target_spend': target_spend,
                     'target_impressions': target_impressions,
                     'target_clicks': target_clicks,
                     'target_ctr': target_ctr,
                     'target_cpc': target_cpc,
+                    'target_cpm': target_cpm,
                     'spend_diff': 0,
                     'impressions_diff': 0,
                     'clicks_diff': 0,
@@ -394,6 +403,8 @@ def filter_campaigns(request):
             data['total_ctr'] = (data['total_clicks'] / data['total_impressions'] * 100
                                  if data['total_impressions'] > 0 else 0)
             data['total_cpc'] = (data['total_spend'] / data['total_clicks']
+                                 if data['total_clicks'] > 0 else 0)
+            data['total_cpm'] = (data['total_spend'] / data['total_impressions'] * 1000
                                  if data['total_clicks'] > 0 else 0)
 
             # Calculate CTR percentage difference and absolute difference

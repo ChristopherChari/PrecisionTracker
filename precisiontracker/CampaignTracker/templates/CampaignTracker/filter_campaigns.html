@@ -4,31 +4,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Precision Tracker</title>
-    <!-- Load the static tag library -->
     {% load static %}
     {% load humanize %}
-
-
+    
     <!-- Link to the CSS file -->
     <link rel="stylesheet" href="{% static 'CampaignTracker/css/style.css' %}">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
     <script>
         $(document).ready(function () {
             // Function to update the product dropdown based on the selected client
             function updateProductDropdown(client_id) {
                 $.ajax({
-                    url: "{% url 'get_products_for_client' %}",  // Adjust this URL to match your view
+                    url: "{% url 'get_products_for_client' %}",
                     data: { client_id: client_id },
                     success: function (data) {
                         let productSelect = $('#product');
-                        productSelect.empty();  // Clear previous options
-                        productSelect.append('<option value="">-- Select Product --</option>');
-                        productSelect.append('<option value="all">-- All Products --</option>');  // Add "All Products" option
+                        productSelect.empty();
+                        productSelect.append('<option value="all">-- All Products --</option>'); // Ensure All Products option
                         data.products.forEach(function (product) {
                             productSelect.append('<option value="' + product + '">' + product + '</option>');
                         });
+                        updateTableProduct(); // Update the product column in the table
                     }
                 });
+            }
+
+            // Function to update the product column in the table
+            function updateTableProduct() {
+                var selectedProduct = $('#product option:selected').text(); // Get the selected product text
+                $('.product-column').text(selectedProduct);  // Update all cells in the product column
             }
 
             // Function to update the campaign list based on selected filters
@@ -38,46 +43,36 @@
                     data: $('#filter-form').serialize(),
                     success: function (data) {
                         $('#campaign-list').html(data.html);
+                        updateTableProduct();  // Update product column after the table is updated
                     }
                 });
             }
 
-            // Function to clear the campaign list (table) when the page is refreshed
-            function clearCampaignList() {
-                $('#campaign-list').html('');  // Clears the HTML inside the campaign list table
-            }
-
-            // Trigger the product dropdown update when a client is selected
+            // Trigger product dropdown update when client changes
             $('#client').on('change', function () {
                 let client_id = $(this).val();
                 if (client_id) {
-                    updateProductDropdown(client_id);  // Update the product dropdown
+                    updateProductDropdown(client_id);
                 } else {
-                    $('#product').empty().append('<option value="">-- Select Product --</option>');
+                    $('#product').empty().append('<option value="all">-- All Products --</option>');
                 }
             });
 
-            // Trigger the campaign list update when any filter changes
+            // Trigger campaign list update when any filter changes
             $('#client, #product, #channel, #campaign_type, #start_date, #end_date').on('change', function () {
                 updateCampaignList();
             });
 
             // Initialize: ensure no product is selected on page load
-            $('#product').empty().append('<option value="">-- Select Product --</option>');
+            $('#product').empty().append('<option value="all">-- All Products --</option>');
+            updateTableProduct();  // Update the product column initially
 
-            // Default to "All Channels" in the channel dropdown
-            $('#channel').val('');  // Assuming the value for "All Channels" option is 'all'
-
-            // Clear the campaign list (table) when the page is refreshed
-            clearCampaignList();
-
-            // If filters are already selected, auto-update the campaign list
             if ($('#client').val() || $('#start_date').val() || $('#end_date').val() || $('#channel').val()) {
                 updateCampaignList();
             }
         });
     </script>
-
+    
     <script>
         $(document).ready(function () {
             // Function to update the KPI cards when filters change
@@ -102,14 +97,16 @@
         });
     </script>
 </head>
+
 <body>
-    <img src="{% static 'CampaignTracker\css\images\pcm-logo.png' %}" alt="PCM Logo" class="logo">
-  
+    <img src="{% static 'CampaignTracker/css/images/pcm-logo.png' %}" alt="PCM Logo" class="logo">
+
     {% include 'nav.html' %}
 
-        <div class="main-content">
-            <div class="filter-bar">
+    <div class="main-content">
+        <div class="filter-bar">
             <form id="filter-form" method="get">
+                <!-- Filter options (Client, Product, Channel, etc.) -->
                 <label for="client">Select Client:</label>
                 <select name="client" id="client">
                     <option value="">-- Select Client --</option>
@@ -120,8 +117,7 @@
 
                 <label for="product">Select Product:</label>
                 <select name="product" id="product">
-                    <option value="">-- Select Product --</option>
-                    <option value="all">-- All Products --</option> 
+                    <option value="all">-- All Products --</option>
                 </select>
 
                 <label for="channel">Select Channel:</label>
@@ -129,28 +125,21 @@
                     <option value="">-- All Channels --</option>
                     <option value="Google" {% if selected_channel == 'Google' %}selected{% endif %}>Google</option>
                     <option value="Stackadapt" {% if selected_channel == 'Stackadapt' %}selected{% endif %}>Programmatic</option>
-                </select>   
+                </select>
 
-                        <!-- New Campaign Type Dropdown -->
-            <label for="campaign_type">Select Campaign Type:</label>
-            <select name="campaign_type" id="campaign_type">
-                <option value="">-- All Campaign Types --</option>
-                <option value="Video" {% if selected_campaign_type == 'Video' %}selected{% endif %}>Video</option>
-                <option value="Display" {% if selected_campaign_type == 'Display' %}selected{% endif %}>Display</option>
-                <option value="Search" {% if selected_campaign_type == 'Search' %}selected{% endif %}>Search</option>
-            </select>
+                <label for="campaign_type">Select Campaign Type:</label>
+                <select name="campaign_type" id="campaign_type">
+                    <option value="">-- All Campaign Types --</option>
+                    <option value="Video" {% if selected_campaign_type == 'Video' %}selected{% endif %}>Video</option>
+                    <option value="Display" {% if selected_campaign_type == 'Display' %}selected{% endif %}>Display</option>
+                    <option value="Search" {% if selected_campaign_type == 'Search' %}selected{% endif %}>Search</option>
+                </select>
 
                 <label for="start_date">Start Date:</label>
                 <input type="date" name="start_date" id="start_date" value="{{ selected_start_date }}">
 
                 <label for="end_date">End Date:</label>
                 <input type="date" name="end_date" id="end_date" value="{{ selected_end_date }}">
-
-                <label for="comparison_period">Comparison Period:</label>
-                <select name="comparison_period" id="comparison_period">
-                    <option value="7days" {% if comparison_period == '7days' %}selected{% endif %}>Previous 7 Days</option>
-                    <option value="month" {% if comparison_period == 'month' %}selected{% endif %}>Previous Month</option>
-                </select>
             </form>
         </div>
 
@@ -204,7 +193,6 @@
             </table>
         </div>
     </div>
-    <div id="kpi-cards" class="kpi-cards">
-    </div>
+    <div id="kpi-cards" class="kpi-cards"></div>
 </body>
 </html>
