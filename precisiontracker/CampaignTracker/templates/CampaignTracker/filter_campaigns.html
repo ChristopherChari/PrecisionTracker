@@ -95,6 +95,29 @@
                 updateKpiCards();
             });
         });
+        $(document).ready(function () {
+    // Initially hide the second table
+    sessionStorage.setItem("tableVisible", "false");
+
+    $("#toggle-second-table").on("click", function () {
+        const isVisible = sessionStorage.getItem("tableVisible") === "true";
+        sessionStorage.setItem("tableVisible", !isVisible);
+        updateCampaignList(); // Update the campaign list with visibility toggle
+    });
+
+    function updateCampaignList() {
+        $.ajax({
+            url: "{% url 'home' %}",
+            data: $('#filter-form').serialize(),
+            success: function (data) {
+                $('#campaign-list').html(data.html);
+                const tableVisible = sessionStorage.getItem("tableVisible") === "true";
+                $(".detailed-table").toggle(tableVisible); // Show or hide based on toggle state
+            }
+            });
+        }
+    });
+
     </script>
 </head>
 
@@ -142,6 +165,8 @@
                 <input type="date" name="end_date" id="end_date" value="{{ selected_end_date }}">
             </form>
         </div>
+
+        <button id="toggle-second-table" type="button">Show/Hide Detailed Table</button>
 
         <div class="table-container">
         <div id="campaign-list">

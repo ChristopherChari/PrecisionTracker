@@ -58,51 +58,47 @@
         {% endfor %}
     </tbody>
 </table>
-<table>
-    <thead>
-        <tr>
-            <th>Channel</th>
-            <th>Product</th>
-            <th>Plan vs Actual</th>
-            <th>Period</th>
-            <th>Spend</th>
-            <th>Impressions</th>
-            <th>CPM</th>
-            <th>Clicks</th>
-            <th>CPC</th>
-            <th>CTR</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for campaign_type, data in campaigns_by_type.items %}
-        <tr class="row-header">
-            <td rowspan="2">  {% if campaign_type == "Stackadapt Display" %}
-                Programmatic Display
-            {% elif campaign_type == "Stackadapt Video" %}
-                Programmatic Video
-            {% else %}
-                {{ campaign_type }}
-            {% endif %}</td>
-            <td rowspan="2" class="product-column">{{ selected_product }}</td> <!-- This will be dynamically updated -->
-            <td>Plan</td>
-            <td>{{ selected_start_date }} - {{ selected_end_date }}</td>
-            <td>£{{ data.target_spend|floatformat:0|intcomma  }}</td>
-            <td>{{ data.target_impressions|floatformat:0|intcomma }}</td>
-            <td>£{{ data.target_cpm|floatformat:2 }}</td>
-            <td>{{ data.target_clicks|floatformat:0|intcomma }}</td>
-            <td>£{{ data.target_cpc|floatformat:2 }}</td>
-            <td>{{ data.target_ctr|floatformat:2 }}%</td>
-        </tr>
-        <tr class="row-header">
-            <td>Actual</td>
-            <td>{{ selected_start_date }} - {{ selected_end_date }}</td>
-            <td>£{{ data.total_spend|floatformat:0|intcomma }}</td>
-            <td>{{ data.total_impressions|floatformat:0|intcomma }}</td>
-            <td>£{{ data.total_cpm|floatformat:2|intcomma }}</td>
-            <td>{{ data.total_clicks|floatformat:0|intcomma }}</td>
-            <td>£{{ data.total_cpc|floatformat:2 }}</td>
-            <td>{{ data.total_ctr|floatformat:2 }}%</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div class="detailed-table">
+    <table>
+        <thead>
+            <tr>
+                <th>Channel</th>
+                <th>Product</th>
+                <th>Plan vs Actual</th>
+                <th>Period</th>
+                <th>Spend</th>
+                <th>Impressions</th>
+                <th>CPM</th>
+                <th>Clicks</th>
+                <th>CPC</th>
+                <th>CTR</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for campaign_type, data in campaigns_by_type.items %}
+            <tr class="row-header">
+                <td rowspan="2">{{ campaign_type }}</td>
+                <td rowspan="2" class="product-column">{{ selected_product }}</td>
+                <td>Plan</td>
+                <td>{{ selected_start_date }} - {{ selected_end_date }}</td>
+                <td>£{{ data.target_spend|floatformat:0|intcomma }}</td>
+                <td>{{ data.target_impressions|floatformat:0|intcomma }}</td>
+                <td>£{{ data.target_cpm|floatformat:2 }}</td>
+                <td>{{ data.target_clicks|floatformat:0|intcomma }}</td>
+                <td>£{{ data.target_cpc|floatformat:2 }}</td>
+                <td>{{ data.target_ctr|floatformat:2 }}%</td>
+            </tr>
+            <tr class="row-header">
+                <td>Actual</td>
+                <td>{{ selected_start_date }} - {{ selected_end_date }}</td>
+                <td>£{{ data.total_spend|floatformat:0|intcomma }}</td>
+                <td>{{ data.total_impressions|floatformat:0|intcomma }}</td>
+                <td>£{{ data.total_cpm|floatformat:2 }}</td>
+                <td>{{ data.total_clicks|floatformat:0|intcomma }}</td>
+                <td>£{{ data.total_cpc|floatformat:2 }}</td>
+                <td>{{ data.total_ctr|floatformat:2 }}%</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
